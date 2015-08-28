@@ -1,4 +1,4 @@
-require './assignSpec.coffee'
-require './transposeSpec.coffee'
-require './parseKeyNameSpec.coffee'
-require './convertSpec.coffee'
+require './assignSpec'
+require './transposeSpec'
+require './parseKeyNameSpec'
+require './convertSpec'

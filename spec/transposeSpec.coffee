@@ -1,9 +1,10 @@
+excelAsJson = require '../src/excel-as-json'
+
 # TODO: How to get chai defined in a more global way
 chai = require 'chai'
 chai.should()
 expect = chai.expect;
 
-excelToJson = require '../src/ExcelToJson.coffee'
 
 _removeDuplicates = (array) ->
   set = {}
@@ -24,7 +25,6 @@ describe 'transpose', ->
     ['one', 'two', 'three']
   ]
 
-
   rectangleTall = [
     ['one', 'two'],
     ['one', 'two'],
@@ -33,32 +33,29 @@ describe 'transpose', ->
 
 
   it 'should transpose square 2D arrays', ->
-    result = excelToJson.transpose square
+    result = excelAsJson.transpose square
     result.length.should.equal 3
 
     for row in result
       row.length.should.equal 3
-      unique = _removeDuplicates(row)
-      unique.length.should.equal 1
+      _removeDuplicates(row).length.should.equal 1
 
 
   it 'should transpose wide rectangular 2D arrays', ->
-    result = excelToJson.transpose rectangleWide
+    result = excelAsJson.transpose rectangleWide
     result.length.should.equal 3
 
     for row in result
       row.length.should.equal 2
-      unique = _removeDuplicates(row)
-      unique.length.should.equal 1
+      _removeDuplicates(row).length.should.equal 1
 
 
   it 'should transpose tall rectangular 2D arrays', ->
-    result = excelToJson.transpose rectangleTall
+    result = excelAsJson.transpose rectangleTall
     result.length.should.equal 2
 
     for row in result
       row.length.should.equal 3
-      unique = _removeDuplicates(row)
-      unique.length.should.equal 1
+      _removeDuplicates(row).length.should.equal 1
 
 

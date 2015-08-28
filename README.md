@@ -1,10 +1,41 @@
 # Convert Excel Files to JSON
 
+## Install
+
+Expected use is offline translation of Excel data to JSON files.
+
+```$ npm install excel-as-json --save-dev```
+
+## Use
+
+```excelAsJson.process(<src>, <dst>, isColOriented);```
+
+* src: path to source Excel file (xlsx only)
+* dst: path to destination JSON file
+* isColOriented: is an Excel row an object, or is a column an object (Default: false)
+
+```CoffeeScript
+excelAsJson = require('excel-as-json').process
+
+excelAsJson './data/row-oriented.xlsx', './build/row-oriented.json'
+excelAsJson './data/col-oriented.xlsx', './build/col-oriented.json', true
+```
+
+```JavaScript
+(function() {
+  var excelAsJson = require('excel-as-json').process;
+
+  excelAsJson('./data/row-oriented.xlsx', './build/row-oriented.json');
+  excelAsJson('./data/col-oriented.xlsx', './build/col-oriented.json', true);
+
+}).call(this);
+```
+
 ### Why?
 
 * Your application serves static data obtained as Excel reports from
   another application
-* Whoever manages your static data finds Excel more pleasant
+* Whoever manages your static data finds Excel more pleasant than editing JSON
 * Your data is the result of calculations or formatting that is
   more simply done in Excel
   
@@ -13,15 +44,16 @@
 Excel stores tabular data. Converting that to JSON using only
 a couple of assumptions is straight-forward. Most interesting
 JSON contains nested lists and objects. How do you map a
-flat data square into these nested lists and objects?
+flat data square that is easy for anyone to edit into these 
+nested lists and objects?
 
 ### Solving the challenge
 
 - Use a key row to name JSON keys
 - Allow data to be stored in row or column orientation.
 - Use javascript notation for keys and arrays
-  - Allow dotted key notation
-  - Allow array subscripts
+  - Allow dotted key path notation
+  - Allow arrays of objects and lists
 
 ### Excel Data
 
@@ -30,15 +62,17 @@ simple objects seem a natural fit for a row oriented sheets. Single objects
 with more complex structure seem more naturally presented as column
 oriented sheets. Doesn't really matter which orientation you use, the
 module allows you to speciy a row or column orientation; basically, where
-your key row is located: row 0 or column 0.
+your keys are located: row 0 or column 0.
 
 Keys and values:
 
-* Row/column 0 contains JSON element key paths
+* Row or column 0 contains JSON key paths
 * Remaining rows/columns contain values for those keys
 * Multiple value rows/columns represent multiple objects stored as a list
 * Within an object, lists of objects have keys like phones[1].type 
 * Within an object, flat lists have keys like aliases[]
+
+### Examples
 
 A simple, row oriented key
 
@@ -72,17 +106,15 @@ and produces
 
 An indexed array key name looks like
 
-|phones[1].number 
+|phones[0].number 
 |---
 |123.456.7890
 
-and looks like 
+and produces 
 
 ```
 [{
-  "phones": [
-    {},
-    {
+  "phones": [{
       "number": "123.456.7890"
     }]
 }]
@@ -94,7 +126,7 @@ An embedded array key name looks like this and has ';' delimited values
 |---
 | stormagedden;bob
 
-and looks like
+and produces
 
 ```
 [{
@@ -137,7 +169,7 @@ would produce
   }]
 ```
 
-You can do something similar in column oriented sheets. Note that a indexed 
+You can do something similar in column oriented sheets. Note that indexed 
 and flat arrays are added.
 
 |firstName | Jihad | Marcus |
@@ -208,26 +240,17 @@ would produce
 ]
 ```
 
-## Use
+## Caveats
 
-### Config Object
+During install (mac), you may see compiler warnings while installing the
+excel dependency - although questionable, they appear to be benign.
 
-#### files
 
-* src: relative path to source Excel file
-* dest: relative path to destination JSON file
-* col-oriented: is sheet column oriented (Default: false)
-
-```CoffeeScript
-FILES = [
-  {src: 'row-oriented.xlsx', dst: 'row-oriented.json', col-oriented: false}
-  {src: 'col-oriented.xlsx', dst: 'col-oriented.json', col-oriented: true}
-  ]
-```
 
 ## TODO
 
 - Make 1 column values a single object?
 - Make work on command line
 - Make work with grunt
+- Detect and convert numbers
 - Detect and convert dates

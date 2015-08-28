@@ -19,11 +19,6 @@
 fs = require "fs"
 excel = require 'excel'
 
-#FILES = [
-#  {src: '../data/row-oriented.xlsx', dst: '../build/row-oriented.json', orientation: false}
-#  {src: '../data/col-oriented.xlsx', dst: '../build/col-oriented.json', orientation: true}
-#  ]
-
 
 isObject = (obj) ->
   Object.prototype.toString.call(obj) is '[object Object]'
@@ -113,9 +108,7 @@ process = (src, dst, isColOriented = false) ->
       if err then console.error "Error reading #{src}", err
       else write convert(data, isColOriented), dst
 
-
-#process file.src, file.dst, file.orientation for file in FILES
-
+# Exposing nearly everything for testing
 exports.assign = assign
 exports.convert = convert
 exports.parseKeyName = parseKeyName
