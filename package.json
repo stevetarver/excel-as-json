@@ -6,12 +6,11 @@
   "license": "MIT",
   "main": "lib/excel-as-json.js",
   "scripts": {
-    "prepublish": "coffee -c -o lib/ src/",
-    "test": "mocha --reporter test"
+    "prepublish": "coffee -c -o lib/ src/"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gist.github.com/51a83b6e5dc398f79a1c.git"
+    "url": "git+https://github.com/stevetarver/excel-as-json.git"
   },
   "keywords": [
     "Excel",
@@ -19,9 +18,9 @@
     "convert"
   ],
   "bugs": {
-    "url": "https://gist.github.com/51a83b6e5dc398f79a1c"
+    "url": "https://github.com/stevetarver/excel-as-json/issues"
   },
-  "homepage": "https://gist.github.com/51a83b6e5dc398f79a1c",
+  "homepage": "https://github.com/stevetarver/excel-as-json",
   "dependencies": {
     "excel": "^0.1.4"
   },

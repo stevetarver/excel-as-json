@@ -173,16 +173,16 @@ You can do something similar in column oriented sheets. Note that indexed
 and flat arrays are added.
 
 |firstName | Jihad | Marcus |
-| :--- | --- | --- |
+| :--- | :--- | :--- |
 |**lastName** | Saladin | Rivapoli |
 |**address.street** |12 Beaver Court | 16 Vail Rd
 |**address.city** | Snowmass | Vail
 |**address.state** | CO | CO
 |**address.zip**| 81615 | 81657
-|**phones.[0].type**| home | home
-|**phones.[0].number** |123.456.7890 | 123.456.7891
-|**phones.[1].type**| work | work
-|**phones.[1].number** | 098.765.4321 | 098.765.4322
+|**phones[0].type**| home | home
+|**phones[0].number** |123.456.7890 | 123.456.7891
+|**phones[1].type**| work | work
+|**phones[1].number** | 098.765.4321 | 098.765.4322
 |**aliases[]** | stormagedden;bob | mac;markie
 
 would produce
@@ -249,8 +249,7 @@ excel dependency - although questionable, they appear to be benign.
 
 ## TODO
 
-- Make 1 column values a single object?
-- Make work on command line
 - Make work with grunt
 - Detect and convert numbers
 - Detect and convert dates
+- Make 1 column values a single object?
