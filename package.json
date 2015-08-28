@@ -1,0 +1,37 @@
+{
+  "name": "excel-as-json",
+  "version": "0.0.1",
+  "description": "Convert Excel xlsx data to JSON",
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gist.github.com/51a83b6e5dc398f79a1c.git"
+  },
+  "keywords": [
+    "Excel",
+    "JSON",
+    "convert"
+  ],
+  "author": "Steve Tarver steve.tarver@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gist.github.com/51a83b6e5dc398f79a1c"
+  },
+  "homepage": "https://gist.github.com/51a83b6e5dc398f79a1c",
+  "dependencies": {
+    "excel": "^0.1.4"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "coffee-script": "^1.9.3",
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-mocha-test": "^0.12.7",
+    "load-grunt-tasks": "^3.2.0",
+    "mocha": "^2.2.5",
+    "time-grunt": "^1.2.1"
+  }
+}
