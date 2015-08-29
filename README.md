@@ -1,3 +1,9 @@
+[![license:mit](https://img.shields.io/badge/license-mit-green.svg?style=flat-square)](#license)
+[![tag:?](https://img.shields.io/github/tag/stevetarver/excel-as-json.svg?style=flat-square)](https://github.com/stevetarver/excel-as-json/releases)
+<br>
+[![npm:](https://img.shields.io/npm/v/excel-as-json.svg?style=flat-square)](https://www.npmjs.com/package/excel-as-json)
+[![dependencies:?](https://img.shields.io/david/stevetarver/excel-as-json.svg?style=flat-square)](https://david-dm.org/stevetarver/excel-as-json.svg)
+
 # Convert Excel Files to JSON
 
 ## Install

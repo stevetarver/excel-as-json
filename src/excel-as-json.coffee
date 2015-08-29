@@ -20,9 +20,6 @@ fs = require "fs"
 excel = require 'excel'
 
 
-isObject = (obj) ->
-  Object.prototype.toString.call(obj) is '[object Object]'
-
 isArray = (obj) ->
   Object.prototype.toString.call(obj) is '[object Array]'
 
@@ -66,7 +63,6 @@ assign = (obj, key, value) ->
       console.error "WARNING: Indexed arrays indicate a list of objects and should not be the last element in a key path"
       console.error "WARNING: The last element of a key path should be a key name or flat array. E.g. alias, aliases[]"
     obj[keyName] = if (keyIsList and not index?) then value.split ';' else value
-    return obj
 
 
 # Transpose a 2D array
@@ -85,7 +81,7 @@ convert = (data, isColOriented = false) ->
   result = []
   for row in rows
     item = {}
-    assign item, keys[index], value for value, index in row
+    assign(item, keys[index], value) for value, index in row
     result.push item
   return result
 

@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - '0.8'
+  - '0.12'
+before_install:
+  - 'npm install -g coffeescript grunt-cli'
+before_script:
+  - 'npm install'
+  - 'grunt dist'

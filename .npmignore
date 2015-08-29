@@ -5,3 +5,4 @@ data
 spec
 Gruntfile.coffee
 .gitignore
+build.sh

@@ -3,10 +3,11 @@ module.exports = (grunt) ->
   require('time-grunt')(grunt)
   require('load-grunt-tasks')(grunt)
 
-  basePath = '.'
-  build = "#{basePath}/build"
-  src = "#{basePath}/src"
-  spec = "#{basePath}/spec"
+  build = "./build"  # Temp build files
+  lib   = "./lib"    # Transpiled JavaScript files
+  spec  = "./spec"   # CoffeeScript specifications
+  src   = "./src"    # CoffeeScript source
+  test  = "./test"    # Transpiled JavaScript test files
 
 
   grunt.initConfig
@@ -19,7 +20,27 @@ module.exports = (grunt) ->
     # --------------------------------------------------------
 
     clean:
-      dist: ["#{build}", 'test', 'lib', 'index.js']
+      dist: [build, test, lib]
+
+
+    # --------------------------------------------------------
+    # Compile coffee files
+    # --------------------------------------------------------
+
+    run:
+      tool:
+        cmd: './build.sh'
+
+
+    # --------------------------------------------------------
+    # Upload coverage to coveralls
+    # --------------------------------------------------------
+
+    coveralls:
+      options:
+        force: false
+      dist:
+        src: 'coverage-results/extra-results-*.info'
 
 
     # --------------------------------------------------------
@@ -31,10 +52,7 @@ module.exports = (grunt) ->
         src: ["#{spec}/all-specs.coffee"]
         options:
           reporter: 'spec'
-          require: [
-            'chai'
-            'coffee-script/register'
-            ]
+          require: ['chai', 'coffee-script/register']
           ui: 'bdd'
 
 
@@ -43,9 +61,7 @@ module.exports = (grunt) ->
   # --------------------------------------------------------  
 
   grunt.registerTask 'default', ['mochaTest']
-
   grunt.registerTask 'test',    ['mochaTest']
-
-  grunt.registerTask 'dist',    ['mochaTest']
+  grunt.registerTask 'dist',    ['clean', 'run', 'mochaTest']
 
   grunt.option 'force', true
