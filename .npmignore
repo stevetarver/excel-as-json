@@ -6,3 +6,5 @@ spec
 Gruntfile.coffee
 .gitignore
 build.sh
+coverage
+coffee-coverage-loader.js

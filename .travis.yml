@@ -2,7 +2,8 @@ language: node_js
 node_js:
   - '0.12'
 before_install:
-  - 'npm install -g coffee-script grunt-cli'
+  - 'npm install -g coffee-script'
 before_script:
-  - 'npm install'
-  - 'grunt dist'
+  - 'npm run-script dist'
+after_success:
+  - 'npm run-script codecov'

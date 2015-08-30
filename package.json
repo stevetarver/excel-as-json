@@ -6,9 +6,12 @@
   "license": "MIT",
   "main": "lib/excel-as-json.js",
   "scripts": {
-    "prepublish": "grunt dist",
-    "testNotes": "echo Testing from the npm package requires installing mocha and chai",
-    "test": "mocha --reporter spec"
+    "clean": "tools/clean.sh",
+    "build": "tools/build.sh",
+    "test": "tools/test.sh",
+    "dist": "tools/dist.sh",
+    "codecov": "cat ./coverage/lcov.info | ./node_modules/.bin/codecov",
+    "prepublish": "tools/dist.sh"
   },
   "repository": {
     "type": "git",
@@ -24,18 +27,14 @@
   },
   "homepage": "https://github.com/stevetarver/excel-as-json",
   "dependencies": {
-    "excel": "^0.1.4"
+    "excel": "0.1.4"
   },
   "devDependencies": {
-    "chai": "^3.2.0",
-    "coffee-script": "^1.9.3",
-    "grunt": "^0.4.5",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-coveralls": "^1.0.0",
-    "grunt-mocha-test": "^0.12.7",
-    "grunt-run": "^0.4.0",
-    "load-grunt-tasks": "^3.2.0",
-    "mocha": "^2.2.5",
-    "time-grunt": "^1.2.1"
+    "chai": "3.2.0",
+    "codecov.io": "0.1.6",
+    "coffee-coverage": "^0.6.3",
+    "coffee-script": "1.9.3",
+    "istanbul": "0.3.18",
+    "mocha": "2.2.5"
   }
 }
