@@ -52,12 +52,22 @@ describe 'assign', ->
     subject.foo.bar[0].what.should.equal 'that'
 
 
-  it 'should assign properties to objects in a list out of order', ->
+  it 'should assign properties to objects in a list with first entry out of order', ->
     subject = {}
     excelAsJson.assign subject, 'foo.bar[1].what', 'that'
     excelAsJson.assign subject, 'foo.bar[0].what', 'this'
-    subject.foo.bar[1].what.should.equal 'that'
     subject.foo.bar[0].what.should.equal 'this'
+    subject.foo.bar[1].what.should.equal 'that'
+
+
+  it 'should assign properties to objects in a list with second entry out of order', ->
+    subject = {}
+    excelAsJson.assign subject, 'foo.bar[0].what', 'this'
+    excelAsJson.assign subject, 'foo.bar[2].what', 'that'
+    excelAsJson.assign subject, 'foo.bar[1].what', 'other'
+    subject.foo.bar[0].what.should.equal 'this'
+    subject.foo.bar[2].what.should.equal 'that'
+    subject.foo.bar[1].what.should.equal 'other'
 
 
   it 'should split a semicolon delimited list for flat arrays', ->

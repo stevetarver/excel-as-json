@@ -87,22 +87,46 @@ convert = (data, isColOriented = false) ->
 
 
 # Write array as JSON data to file
-write = (data, dst) ->
+# call back is callback(err)
+write = (data, dst, callback) ->
   fs.writeFile dst, JSON.stringify(data, null, 2), (err) ->
-    if err then console.error("Error writing file #{dst}", err)
-    else console.log "Updated #{dst}"
+    if callback
+      if err then callback "Error writing file #{dst}: #{err}"
+      else callback undefined
 
 
-# The excel module reads sheet 0 from specified xlsx file
-process = (src, dst, isColOriented = false) ->
+# src: xlsx file that we will read sheet 0 of
+# dst: file path to write json to. If null, simply return the result
+# isColOriented: are objects stored in excel rows or columns
+# callback(err, data): callback for completion notification
+#
+# process(src, dst)
+#   will write a row oriented xlsx to file with no notification
+# process(src, dst, true)
+#   will write a col oriented xlsx to file with no notification
+# process(src, null, true, callback)
+#   will return the parsed object tree in the callback
+#
+# TODO: Do we need a processSync
+process = (src, dst, isColOriented=false, callback=undefined) ->
   # NOTE: 'excel' does not properly bubble file not found and prints
   #       an ugly error we can't trap, so look for this common error first
   if not fs.existsSync src
-    console.error "Cannot find src file #{src}"
+    callback "Cannot find src file #{src}" if callback
   else
     excel src, (err, data) ->
-      if err then console.error "Error reading #{src}", err
-      else write convert(data, isColOriented), dst
+      if err
+        callback "Error reading #{src}: #{err}" if callback
+      else
+        result = convert data, isColOriented
+        if dst
+          write result, dst, (err) ->
+            if callback
+              if err then callback err
+              else callback undefined, result
+        else
+          callback undefined, result if callback
+
 
 # Exposing nearly everything for testing
 exports.assign = assign

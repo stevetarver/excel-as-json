@@ -13,33 +13,53 @@
 
 ## Install
 
-Expected use is offline translation of Excel data to JSON files.
+Expected use is offline translation of Excel data to JSON files, although
+async facilities are provided.
 
 ```$ npm install excel-as-json --save-dev```
 
 ## Use
 
-```excelAsJson.process(<src>, <dst>, isColOriented);```
+```excelAsJson.process(<src>, <dst>, isColOriented, callback);```
 
-* src: path to source Excel file (xlsx only)
-* dst: path to destination JSON file
+* src: path to source Excel file (xlsx only) - will read sheet 0
+* dst: path to destination JSON file. If null, simply return the parsed object tree
 * isColOriented: is an Excel row an object, or is a column an object (Default: false)
+* callback(err, data): callback for completion notification
+
+With these arguments, you can:
+
+* process(src, dst)
+  will write a row oriented xlsx to file with no notification
+* process(src, dst, true)
+  will write a col oriented xlsx to file with no notification
+* process(src, null, true, callback)
+  will return the parsed object tree in the callback
+
+Convert a row/col oriented Excel file to JSON as a development task and
+log errors:
 
 ```CoffeeScript
-excelAsJson = require('excel-as-json').process
+convertExcel = require('excel-as-json').process
 
-excelAsJson './data/row-oriented.xlsx', './build/row-oriented.json'
-excelAsJson './data/col-oriented.xlsx', './build/col-oriented.json', true
+convertExcel 'row.xlsx', 'row.json', false, (err, data) ->
+	if err then console.log "JSON conversion failure: #{err}"
+convertExcel 'col.xlsx', 'col.json', true, (err, data) ->
+	if err then console.log "JSON conversion failure: #{err}"
 ```
+Convert Excel file to an object tree and use that tree. Note that 
+properly formatted date will convert to the same object tree whether
+row or column oriented.
 
-```JavaScript
-(function() {
-  var excelAsJson = require('excel-as-json').process;
+```CoffeeScript
+convertExcel = require('excel-as-json').process
 
-  excelAsJson('./data/row-oriented.xlsx', './build/row-oriented.json');
-  excelAsJson('./data/col-oriented.xlsx', './build/col-oriented.json', true);
-
-}).call(this);
+convertExcel 'row.xlsx', undefined, false, (err, data) ->
+	if err throw err
+	doSomethingInteresting data
+convertExcel 'col.xlsx', undefined, true, (err, data) ->
+	if err throw err
+	doSomethingInteresting data
 ```
 
 ### Why?
@@ -264,4 +284,3 @@ excel dependency - although questionable, they appear to be benign.
 - Detect and convert numbers
 - Detect and convert dates
 - Make 1 column values a single object?
-- Make proper sync and async methods
