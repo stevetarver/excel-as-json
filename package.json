@@ -11,6 +11,7 @@
     "test": "tools/test.sh",
     "dist": "tools/dist.sh",
     "codecov": "cat ./coverage/lcov.info | ./node_modules/.bin/codecov",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "prepublish": "tools/dist.sh"
   },
   "repository": {
@@ -34,6 +35,7 @@
     "codecov.io": "0.1.6",
     "coffee-coverage": "^0.6.3",
     "coffee-script": "1.9.3",
+    "coveralls": "2.11.4",
     "istanbul": "0.3.18",
     "mocha": "2.2.5"
   }

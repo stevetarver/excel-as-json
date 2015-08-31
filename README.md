@@ -1,12 +1,12 @@
-[![tag:?](https://img.shields.io/github/tag/stevetarver/excel-as-json.svg?style=flat-square)](https://github.com/stevetarver/excel-as-json/releases)
-[![license:mit](https://img.shields.io/badge/license-mit-green.svg?style=flat-square)](#license)
-[![build:?](https://img.shields.io/travis/stevetarver/excel-as-json/master.svg?style=flat-square)](https://travis-ci.org/stevetarver/excel-as-json)
+[![tag:?](https://img.shields.io/github/tag/stevetarver/excel-as-json.svg)](https://github.com/stevetarver/excel-as-json/releases)
+[![license:mit](https://img.shields.io/badge/license-mit-green.svg)](#license)
+[![build:?](https://img.shields.io/travis/stevetarver/excel-as-json/master.svg)](https://travis-ci.org/stevetarver/excel-as-json)
 [![coverage:?](https://img.shields.io/coveralls/stevetarver/excel-as-json/master.svg?style=flat-square)](https://coveralls.io/r/stevetarver/excel-as-json)
-[![codecov.io](https://img.shields.io/codecov/c/github/stevetarver/excel-as-json/master.svg?style=flat-square)](https://codecov.io/github/stevetarver/codecov.io?branch=master)
+[![codecov.io](http://codecov.io/github/stevetarver/excel-as-json/coverage.svg?branch=master)](http://codecov.io/github/stevetarver/excel-as-json?branch=master)
 <br>
-[![npm:](https://img.shields.io/npm/v/excel-as-json.svg?style=flat-square)](https://www.npmjs.com/package/excel-as-json)
-[![dependencies:?](https://img.shields.io/david/stevetarver/excel-as-json.svg?style=flat-square)](https://david-dm.org/stevetarver/excel-as-json.svg)
-[![devDependency Status](https://david-dm.org/stevetarver/excel-as-json/dev-status.svg?style=flat-square)](https://david-dm.org/stevetarver/excel-as-json#info=devDependencies)
+[![npm:](https://img.shields.io/npm/v/excel-as-json.svg)](https://www.npmjs.com/package/excel-as-json)
+[![dependencies:?](https://img.shields.io/david/stevetarver/excel-as-json.svg)](https://david-dm.org/stevetarver/excel-as-json.svg)
+[![devDependency Status](https://david-dm.org/stevetarver/excel-as-json/dev-status.svg)](https://david-dm.org/stevetarver/excel-as-json#info=devDependencies)
 
 
 # Convert Excel Files to JSON
@@ -264,3 +264,4 @@ excel dependency - although questionable, they appear to be benign.
 - Detect and convert numbers
 - Detect and convert dates
 - Make 1 column values a single object?
+- Make proper sync and async methods

@@ -7,3 +7,4 @@ before_script:
   - 'npm run-script dist'
 after_success:
   - 'npm run-script codecov'
+  - 'npm run-script coveralls'
