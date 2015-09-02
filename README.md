@@ -20,7 +20,10 @@ async facilities are provided.
 
 ## Use
 
-```excelAsJson.process(<src>, <dst>, isColOriented, callback);```
+```js
+convertExcel = require('excel-as-json').processFile;
+convertExcel(<src>, <dst>, isColOriented, callback);
+```
 
 * src: path to source Excel file (xlsx only) - will read sheet 0
 * dst: path to destination JSON file. If null, simply return the parsed object tree
@@ -29,18 +32,20 @@ async facilities are provided.
 
 With these arguments, you can:
 
-* process(src, dst)
+* convertExcel(src, dst)
   will write a row oriented xlsx to file with no notification
-* process(src, dst, true)
+* convertExcel(src, dst, true)
   will write a col oriented xlsx to file with no notification
-* process(src, null, true, callback)
-  will return the parsed object tree in the callback
+* convertExcel(src, dst, true, callback)
+  will write a col oriented xlsx to file and notify with errors and data
+* convertExcel(src, null, true, callback)
+  will return errors and the parsed object tree in the callback
 
 Convert a row/col oriented Excel file to JSON as a development task and
 log errors:
 
 ```CoffeeScript
-convertExcel = require('excel-as-json').process
+convertExcel = require('excel-as-json').processFile
 
 convertExcel 'row.xlsx', 'row.json', false, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
@@ -48,11 +53,11 @@ convertExcel 'col.xlsx', 'col.json', true, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
 ```
 Convert Excel file to an object tree and use that tree. Note that 
-properly formatted date will convert to the same object tree whether
+properly formatted data will convert to the same object tree whether
 row or column oriented.
 
 ```CoffeeScript
-convertExcel = require('excel-as-json').process
+convertExcel = require('excel-as-json').processFile
 
 convertExcel 'row.xlsx', undefined, false, (err, data) ->
 	if err throw err
@@ -84,7 +89,7 @@ nested lists and objects?
 - Allow data to be stored in row or column orientation.
 - Use javascript notation for keys and arrays
   - Allow dotted key path notation
-  - Allow arrays of objects and lists
+  - Allow arrays of objects and literals
 
 ### Excel Data
 
@@ -270,6 +275,10 @@ would produce
   }
 ]
 ```
+## Data Conversions
+
+All values from the 'excel' package are returned as text. This module detects numbers and booleans and converts them to javascript types. Booleans must be text 'true' or 'false'. Excel FALSE and TRUE are provided 
+from 'excel' as 0 and 1 - just too confusing.
 
 ## Caveats
 
@@ -277,10 +286,16 @@ During install (mac), you may see compiler warnings while installing the
 excel dependency - although questionable, they appear to be benign.
 
 
-
 ## TODO
 
-- Make work with grunt
-- Detect and convert numbers
+- provide processSync - using 'async' module
 - Detect and convert dates
 - Make 1 column values a single object?
+
+
+## Change History
+
+### 1.0.0
+- Changed process() to processFile() to avoid name collision with node's process object
+- Automatically convert text numbers and booleans to native values
+- Create destination directory if it does not exist

@@ -1,4 +1,4 @@
-excelAsJson = require '../src/excel-as-json'
+assign = require('../src/excel-as-json').assign
 
 # TODO: How to get chai defined in a more global way
 chai = require 'chai'
@@ -9,62 +9,63 @@ describe 'assign', ->
 
   it 'should assign first level properties', ->
     subject = {}
-    excelAsJson.assign subject, 'foo', 'clyde'
+    assign subject, 'foo', 'clyde'
     subject.foo.should.equal 'clyde'
 
 
   it 'should assign second level properties', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar', 'wombat'
+    assign subject, 'foo.bar', 'wombat'
     subject.foo.bar.should.equal 'wombat'
 
 
   it 'should assign third level properties', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar.bazz', 'honey badger'
+    assign subject, 'foo.bar.bazz', 'honey badger'
     subject.foo.bar.bazz.should.equal 'honey badger'
+
+
+  it 'should convert text to numbers', ->
+    subject = {}
+    assign subject, 'foo.bar.bazz', '42'
+    subject.foo.bar.bazz.should.equal 42
+
+
+  it 'should convert text to booleans', ->
+    subject = {}
+    assign subject, 'foo.bar.bazz', 'true'
+    subject.foo.bar.bazz.should.equal true
+    assign subject, 'foo.bar.bazz', 'false'
+    subject.foo.bar.bazz.should.equal false
 
 
   it 'should overwrite existing values', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar.bazz', 'honey badger'
+    assign subject, 'foo.bar.bazz', 'honey badger'
     subject.foo.bar.bazz.should.equal 'honey badger'
-    excelAsJson.assign subject, 'foo.bar.bazz', "don't care"
+    assign subject, 'foo.bar.bazz', "don't care"
     subject.foo.bar.bazz.should.equal "don't care"
-
-
-  it 'should assign any literal value', ->
-    subject = {}
-    excelAsJson.assign subject, 'foo.bar.bazz', 1
-    subject.foo.bar.bazz.should.equal 1
-
-    excelAsJson.assign subject, 'foo.bar.bazz', ['a', 2, ['three']]
-    subject.foo.bar.bazz.toString().should.equal ['a', 2, ['three']].toString()
-
-    test = {one: 1, 'two': 'too'}
-    excelAsJson.assign subject, 'foo.bar.bazz', test
-    JSON.stringify(subject.foo.bar.bazz).should.equal JSON.stringify(test)
 
 
   it 'should assign properties to objects in a list', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar[0].what', 'that'
+    assign subject, 'foo.bar[0].what', 'that'
     subject.foo.bar[0].what.should.equal 'that'
 
 
   it 'should assign properties to objects in a list with first entry out of order', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar[1].what', 'that'
-    excelAsJson.assign subject, 'foo.bar[0].what', 'this'
+    assign subject, 'foo.bar[1].what', 'that'
+    assign subject, 'foo.bar[0].what', 'this'
     subject.foo.bar[0].what.should.equal 'this'
     subject.foo.bar[1].what.should.equal 'that'
 
 
   it 'should assign properties to objects in a list with second entry out of order', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar[0].what', 'this'
-    excelAsJson.assign subject, 'foo.bar[2].what', 'that'
-    excelAsJson.assign subject, 'foo.bar[1].what', 'other'
+    assign subject, 'foo.bar[0].what', 'this'
+    assign subject, 'foo.bar[2].what', 'that'
+    assign subject, 'foo.bar[1].what', 'other'
     subject.foo.bar[0].what.should.equal 'this'
     subject.foo.bar[2].what.should.equal 'that'
     subject.foo.bar[1].what.should.equal 'other'
@@ -72,11 +73,23 @@ describe 'assign', ->
 
   it 'should split a semicolon delimited list for flat arrays', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar[]', 'peter;paul;mary'
+    assign subject, 'foo.bar[]', 'peter;paul;mary'
     subject.foo.bar.toString().should.equal ['peter','paul','mary'].toString()
+
+
+  it 'should convert text in a semicolon delimited list to numbers', ->
+    subject = {}
+    assign subject, 'foo.bar[]', 'peter;-43;mary'
+    subject.foo.bar.toString().should.equal ['peter',-43,'mary'].toString()
+
+
+  it 'should convert text in a semicolon delimited list to booleans', ->
+    subject = {}
+    assign subject, 'foo.bar[]', 'peter;false;true'
+    subject.foo.bar.toString().should.equal ['peter',false,true].toString()
 
 
   it 'should not split a semicolon list with a terminal indexed array', ->
     subject = {}
-    excelAsJson.assign subject, 'foo.bar[0]', 'peter;paul;mary'
+    assign subject, 'foo.bar[0]', 'peter;paul;mary'
     subject.foo.bar.should.equal 'peter;paul;mary'

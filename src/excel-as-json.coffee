@@ -16,9 +16,12 @@
 #  From a shell
 #    coffee src/ExcelToJson.coffee
 #
-fs = require "fs"
+fs = require 'fs'
+path = require 'path'
 excel = require 'excel'
 
+BOOLTEXT = ['true', 'false']
+BOOLVALS = {'true': true, 'false': false}
 
 isArray = (obj) ->
   Object.prototype.toString.call(obj) is '[object Array]'
@@ -35,6 +38,24 @@ parseKeyName = (key) ->
     when index             then [true, key.split('[')[0], Number(index[1])]
     when key[-2..] is '[]' then [true, key[...-2], undefined]
     else                        [false, key, undefined]
+
+
+# Convert a list of values to a list of more native forms
+convertValueList = (list) ->
+  (convertValue(item) for item in list)
+
+
+# Convert values to native types
+# Assume: all values from the excel module are text
+convertValue = (value) ->
+  if isFinite(value)
+    Number(value)
+  else
+    testVal = value.toLowerCase()
+    if testVal in BOOLTEXT
+      BOOLVALS[testVal]
+    else
+      value
 
 
 # Assign a value to a dotted property key - set values on sub-objects
@@ -62,7 +83,10 @@ assign = (obj, key, value) ->
       console.error "WARNING: Unexpected key path terminal containing an indexed list for <#{keyName}>"
       console.error "WARNING: Indexed arrays indicate a list of objects and should not be the last element in a key path"
       console.error "WARNING: The last element of a key path should be a key name or flat array. E.g. alias, aliases[]"
-    obj[keyName] = if (keyIsList and not index?) then value.split ';' else value
+    if (keyIsList and not index?)
+      obj[keyName] = convertValueList(value.split ';')
+    else
+      obj[keyName] = convertValue value
 
 
 # Transpose a 2D array
@@ -89,10 +113,12 @@ convert = (data, isColOriented = false) ->
 # Write array as JSON data to file
 # call back is callback(err)
 write = (data, dst, callback) ->
+  # Create the target directory if it does not exist
+  dir = path.dirname(dst)
+  fs.mkdir dir if !fs.existsSync(dir)
   fs.writeFile dst, JSON.stringify(data, null, 2), (err) ->
-    if callback
-      if err then callback "Error writing file #{dst}: #{err}"
-      else callback undefined
+    if err then callback "Error writing file #{dst}: #{err}"
+    else callback undefined
 
 
 # src: xlsx file that we will read sheet 0 of
@@ -108,29 +134,31 @@ write = (data, dst, callback) ->
 #   will return the parsed object tree in the callback
 #
 # TODO: Do we need a processSync
-process = (src, dst, isColOriented=false, callback=undefined) ->
+processFile = (src, dst, isColOriented=false, callback=undefined) ->
+  # provide a callback if the user did not
+  if !callback then callback = (err, data) ->
   # NOTE: 'excel' does not properly bubble file not found and prints
   #       an ugly error we can't trap, so look for this common error first
   if not fs.existsSync src
-    callback "Cannot find src file #{src}" if callback
+    callback "Cannot find src file #{src}"
   else
     excel src, (err, data) ->
       if err
-        callback "Error reading #{src}: #{err}" if callback
+        callback "Error reading #{src}: #{err}"
       else
         result = convert data, isColOriented
         if dst
           write result, dst, (err) ->
-            if callback
-              if err then callback err
-              else callback undefined, result
+            if err then callback err
+            else callback undefined, result
         else
-          callback undefined, result if callback
+          callback undefined, result
 
 
 # Exposing nearly everything for testing
 exports.assign = assign
 exports.convert = convert
+exports.convertValue = convertValue
 exports.parseKeyName = parseKeyName
-exports.process = process
+exports.processFile = processFile
 exports.transpose = transpose

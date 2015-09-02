@@ -1,6 +1,6 @@
 {
   "name": "excel-as-json",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "Convert Excel data to JSON",
   "author": "Steve Tarver <steve.tarver@gmail.com>",
   "license": "MIT",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "chai": "3.2.0",
     "codecov.io": "0.1.6",
-    "coffee-coverage": "^0.6.3",
+    "coffee-coverage": "0.6.3",
     "coffee-script": "1.9.3",
     "coveralls": "2.11.4",
     "istanbul": "0.3.18",

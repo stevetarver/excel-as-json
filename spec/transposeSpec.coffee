@@ -1,4 +1,4 @@
-excelAsJson = require '../src/excel-as-json'
+transpose = require('../src/excel-as-json').transpose
 
 # TODO: How to get chai defined in a more global way
 chai = require 'chai'
@@ -33,7 +33,7 @@ describe 'transpose', ->
 
 
   it 'should transpose square 2D arrays', ->
-    result = excelAsJson.transpose square
+    result = transpose square
     result.length.should.equal 3
 
     for row in result
@@ -42,7 +42,7 @@ describe 'transpose', ->
 
 
   it 'should transpose wide rectangular 2D arrays', ->
-    result = excelAsJson.transpose rectangleWide
+    result = transpose rectangleWide
     result.length.should.equal 3
 
     for row in result
@@ -51,7 +51,7 @@ describe 'transpose', ->
 
 
   it 'should transpose tall rectangular 2D arrays', ->
-    result = excelAsJson.transpose rectangleTall
+    result = transpose rectangleTall
     result.length.should.equal 2
 
     for row in result
