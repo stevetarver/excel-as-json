@@ -118,10 +118,9 @@ convert = (data, isColOriented = false) ->
 write = (data, dst, callback) ->
   # Create the target directory if it does not exist
   dir = path.dirname(dst)
-  fs.stat dir, (err, exists) ->
+  fs.stat dir, (err) ->
     if err
-      callback err
-    else if not exists
+      # file does not exist or is not accessible
       fs.mkdir dir, (err) ->
         if err
           callback err
@@ -141,7 +140,9 @@ writeCallback = (data, dst, callback) ->
 writeSync = (data, dst) ->
   # Create the target directory if it does not exist
   dir = path.dirname(dst)
-  if not fs.statSync dir
+  try
+    fs.statSync dir
+  catch
     fs.mkdirSync dir
   fs.writeFileSync dst, JSON.stringify(data, null, 2)
 
@@ -162,11 +163,10 @@ processFile = (src, dst, isColOriented=false, callback=undefined) ->
   if !callback then callback = (err, data) ->
   # NOTE: 'excel' does not properly bubble file not found and prints
   #       an ugly error we can't trap, so check for file existence first
-  fs.stat src, (err, exists) ->
+  fs.stat src, (err) ->
     if err
-      callback err
-    else if not exists
-      callback new Error("Cannot find src file #{src}")
+      # File probably does not exist
+      callback new Error("Cannot read src file #{src}: #{err}")
     else
       type = mime.lookup src
       if type is "text/csv"
@@ -190,9 +190,7 @@ processFileCallback = (err, data, src, dst, isColOriented, callback) ->
         callback undefined, result
 
 processFileSync = (src, dst, isColOriented) ->
-  exists = fs.statSync src
-  if not exists
-    throw new Error("Cannot find src file #{src}")
+  fs.statSync src  # throws an error if file does not exist
   type = mime.lookup src
   data = null
   if type is "text/csv"

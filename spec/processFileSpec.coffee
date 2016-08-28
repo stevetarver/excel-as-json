@@ -1,6 +1,7 @@
 processFile = require('../src/excel-as-json').processFile
 processFileSync = require('../src/excel-as-json').processFileSync
 fs = require 'fs'
+path = require 'path'
 
 # TODO: How to get chai defined in a more global way
 chai = require 'chai'
@@ -12,6 +13,7 @@ ROW_CSV = 'data/row-oriented.csv'
 ROW_JSON = 'build/row-oriented.json'
 COL_XLSX = 'data/col-oriented.xlsx'
 COL_JSON = 'build/col-oriented.json'
+DIRECTORY = 'build/dir'
 
 describe 'process file', ->
 
@@ -19,6 +21,11 @@ describe 'process file', ->
     processFile 'data/doesNotExist.xlsx', null, false, (err, data) ->
       err.should.be.an 'error'
       expect(data).to.be.an 'undefined'
+
+      # Test sync API
+      expect(() ->
+        processFileSync 'data/doesNotExist', null, false
+      ).to.throw(Error)
       done()
 
 
@@ -77,6 +84,25 @@ describe 'process file', ->
       fs.existsSync(ROW_JSON).should.equal false
       resultStr = '[{"firstName":"Jihad","lastName":"Saladin","address":{"street":"12 Beaver Court","city":"Snowmass","state":"CO","zip":81615}},{"firstName":"Marcus","lastName":"Rivapoli","address":{"street":"16 Vail Rd","city":"Vail","state":"CO","zip":81657}}]'
       JSON.stringify(data).should.equal resultStr
+      done()
+
+  it 'should create directory if directory does not exist', (done) ->
+    path = path.join(DIRECTORY, "out.json")
+    processFile ROW_CSV, path, false, (err, data) ->
+      expect(err).to.be.an 'undefined'
+      fs.existsSync(path).should.equal true
+
+      # Cleanup
+      fs.unlinkSync(path)
+      fs.rmdirSync(DIRECTORY)
+
+      # Synchronous version
+      processFileSync ROW_CSV, path, false
+      fs.existsSync(path).should.equal true
+
+      # Cleanup
+      fs.unlinkSync(path)
+      fs.rmdirSync(DIRECTORY)
       done()
 
 
