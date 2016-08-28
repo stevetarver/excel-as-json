@@ -19,6 +19,8 @@
 fs = require 'fs'
 path = require 'path'
 excel = require 'excel'
+csv = require 'csv-parse'
+mime = require 'mime'
 
 BOOLTEXT = ['true', 'false']
 BOOLVALS = {'true': true, 'false': false}
@@ -142,18 +144,25 @@ processFile = (src, dst, isColOriented=false, callback=undefined) ->
   if not fs.existsSync src
     callback "Cannot find src file #{src}"
   else
-    excel src, (err, data) ->
-      if err
-        callback "Error reading #{src}: #{err}"
-      else
-        result = convert data, isColOriented
-        if dst
-          write result, dst, (err) ->
-            if err then callback err
-            else callback undefined, result
-        else
-          callback undefined, result
+    type = mime.lookup src
+    if type is "text/csv"
+      fs.createReadStream(src).pipe csv (err, data) ->
+        processFileCallback err, data, src, dst, isColOriented, callback
+    else
+      excel src, (err, data) ->
+        processFileCallback err, data, src, dst, isColOriented, callback
 
+processFileCallback = (err, data, src, dst, isColOriented, callback) ->
+  if err
+    callback "Error reading #{src}: #{err}"
+  else
+    result = convert data, isColOriented
+    if dst
+      write result, dst, (err) ->
+        if err then callback err
+        else callback undefined, result
+    else
+      callback undefined, result
 
 # Exposing nearly everything for testing
 exports.assign = assign

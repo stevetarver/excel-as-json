@@ -7,6 +7,7 @@ chai.should()
 expect = chai.expect;
 
 ROW_XLSX = 'data/row-oriented.xlsx'
+ROW_CSV = 'data/row-oriented.csv'
 ROW_JSON = 'build/row-oriented.json'
 COL_XLSX = 'data/col-oriented.xlsx'
 COL_JSON = 'build/col-oriented.json'
@@ -26,14 +27,14 @@ describe 'process file', ->
 
 
   it 'should notify on read error', (done) ->
-    processFile 'data/row-oriented.csv', null, false, (err, data) ->
+    processFile 'data/image.gif', null, false, (err, data) ->
       err.should.be.a 'string'
       expect(data).to.be.an 'undefined'
       done()
 
 
   it 'should not blow up on read error when no callback is provided', (done) ->
-    processFile 'data/row-oriented.csv', ->
+    processFile 'data/image.gif', ->
     done()
 
 
@@ -56,6 +57,14 @@ describe 'process file', ->
       JSON.stringify(data).should.equal resultStr
       done()
 
+  it 'should produce the same result on csv as equivalent xlsx file', (done) ->
+    processFile ROW_XLSX, null, false, (err, xlsxData) ->
+      expect(err).to.be.an 'undefined'
+      processFile ROW_CSV, null, false, (err, csvData) ->
+        expect(err).to.be.an 'undefined'
+        expect(xlsxData.length).to.equal(2)
+        expect(xlsxData).to.eql(csvData)
+        done()
 
   it 'should return a parsed object without writing a file', (done) ->
     # Ensure result file does not exit
