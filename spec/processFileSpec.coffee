@@ -1,4 +1,5 @@
 processFile = require('../src/excel-as-json').processFile
+processFileSync = require('../src/excel-as-json').processFileSync
 fs = require 'fs'
 
 # TODO: How to get chai defined in a more global way
@@ -16,7 +17,7 @@ describe 'process file', ->
 
   it 'should notify on file does not exist', (done) ->
     processFile 'data/doesNotExist.xlsx', null, false, (err, data) ->
-      err.should.be.a 'string'
+      err.should.be.an 'error'
       expect(data).to.be.an 'undefined'
       done()
 
@@ -28,7 +29,7 @@ describe 'process file', ->
 
   it 'should notify on read error', (done) ->
     processFile 'data/image.gif', null, false, (err, data) ->
-      err.should.be.a 'string'
+      err.should.be.an 'error'
       expect(data).to.be.an 'undefined'
       done()
 
@@ -81,8 +82,23 @@ describe 'process file', ->
 
   it 'should notify on write error', (done) ->
     processFile ROW_XLSX, 'build', false, (err, data) ->
-      expect(err).to.be.an 'string'
+      expect(err).to.be.an 'error'
       done()
+
+  it 'should produce same results in sync and async APIs for CSV', (done) ->
+    processFile ROW_CSV, ROW_JSON, false, (err, dataAsync) ->
+      expect(err).to.be.an 'undefined'
+      jsonAsync = fs.readFileSync ROW_JSON, "utf-8"
+      dataSync = processFileSync ROW_CSV, ROW_JSON, false
+      jsonSync = fs.readFileSync ROW_JSON, "utf-8"
+      expect(dataAsync).to.eql(dataSync)
+      expect(jsonAsync).to.equal(jsonSync)
+      done()
+
+  it 'should throw an error when attempting xlsx sync API', () ->
+    expect(() ->
+      processFileSync ROW_XLSX, ROW_JSON, false
+    ).to.throw(Error, /Cannot read XLSX via sync API/)
 
 
 
