@@ -13,7 +13,7 @@
 
 ## Install
 
-Expected use is offline translation of Excel data to JSON files, although
+Expected use is offline translation of Excel or CSV data to JSON files, although
 async facilities are provided.
 
 ```$ npm install excel-as-json --save-dev```
@@ -25,7 +25,7 @@ convertExcel = require('excel-as-json').processFile;
 convertExcel(<src>, <dst>, isColOriented, callback);
 ```
 
-* src: path to source Excel file (xlsx only) - will read sheet 0
+* src: path to source Excel file (xlsx or csv only) - will read sheet 0
 * dst: path to destination JSON file. If null, simply return the parsed object tree
 * isColOriented: is an Excel row an object, or is a column an object (Default: false)
 * callback(err, data): callback for completion notification
@@ -33,11 +33,11 @@ convertExcel(<src>, <dst>, isColOriented, callback);
 With these arguments, you can:
 
 * convertExcel(src, dst)
-  will write a row oriented xlsx to file with no notification
+  will write a row oriented spreadsheet to file with no notification
 * convertExcel(src, dst, true)
-  will write a col oriented xlsx to file with no notification
+  will write a col oriented spreadsheet to file with no notification
 * convertExcel(src, dst, true, callback)
-  will write a col oriented xlsx to file and notify with errors and data
+  will write a col oriented spreadsheet to file and notify with errors and data
 * convertExcel(src, null, true, callback)
   will return errors and the parsed object tree in the callback
 
@@ -65,6 +65,14 @@ convertExcel 'row.xlsx', undefined, false, (err, data) ->
 convertExcel 'col.xlsx', undefined, true, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
+```
+
+A synchronous API is available, but it supports CSV files only,
+due to limitations in the *excel.js* module.
+
+```CoffeeScript
+convertExcelSync = require('excel-as-json').processFileSync
+data = convertExcelSync 'input.csv', 'output.json', false
 ```
 
 ### Why?

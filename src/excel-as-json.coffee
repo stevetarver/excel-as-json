@@ -16,9 +16,12 @@
 #  From a shell
 #    coffee src/ExcelToJson.coffee
 #
-fs = require 'fs'
-path = require 'path'
+csv = require 'csv-parse'
+csvSync = require 'csv-parse/lib/sync'
 excel = require 'excel'
+fs = require 'fs'
+mime = require 'mime'
+path = require 'path'
 
 BOOLTEXT = ['true', 'false']
 BOOLVALS = {'true': true, 'false': false}
@@ -115,10 +118,33 @@ convert = (data, isColOriented = false) ->
 write = (data, dst, callback) ->
   # Create the target directory if it does not exist
   dir = path.dirname(dst)
-  fs.mkdir dir if !fs.existsSync(dir)
+  fs.stat dir, (err) ->
+    if err
+      # file does not exist or is not accessible
+      fs.mkdir dir, (err) ->
+        if err
+          callback err
+        else
+          writeCallback data, dst, callback
+    else
+      process.nextTick ->
+        writeCallback data, dst, callback
+
+writeCallback = (data, dst, callback) ->
   fs.writeFile dst, JSON.stringify(data, null, 2), (err) ->
-    if err then callback "Error writing file #{dst}: #{err}"
+    if err then callback new Error("Error writing file #{dst}: #{err}")
     else callback undefined
+
+
+# Synchronous version of write
+writeSync = (data, dst) ->
+  # Create the target directory if it does not exist
+  dir = path.dirname(dst)
+  try
+    fs.statSync dir
+  catch
+    fs.mkdirSync dir
+  fs.writeFileSync dst, JSON.stringify(data, null, 2)
 
 
 # src: xlsx file that we will read sheet 0 of
@@ -132,27 +158,53 @@ write = (data, dst, callback) ->
 #   will write a col oriented xlsx to file with no notification
 # process(src, null, true, callback)
 #   will return the parsed object tree in the callback
-#
-# TODO: Do we need a processSync
 processFile = (src, dst, isColOriented=false, callback=undefined) ->
   # provide a callback if the user did not
   if !callback then callback = (err, data) ->
   # NOTE: 'excel' does not properly bubble file not found and prints
-  #       an ugly error we can't trap, so look for this common error first
-  if not fs.existsSync src
-    callback "Cannot find src file #{src}"
-  else
-    excel src, (err, data) ->
-      if err
-        callback "Error reading #{src}: #{err}"
+  #       an ugly error we can't trap, so check for file existence first
+  fs.stat src, (err) ->
+    if err
+      # File probably does not exist
+      callback new Error("Cannot read src file #{src}: #{err}")
+    else
+      type = mime.lookup src
+      if type is "text/csv"
+        fs.createReadStream(src).pipe csv (err, data) ->
+          processFileCallback err, data, src, dst, isColOriented, callback
       else
-        result = convert data, isColOriented
-        if dst
-          write result, dst, (err) ->
-            if err then callback err
-            else callback undefined, result
-        else
-          callback undefined, result
+        excel src, (err, data) ->
+          processFileCallback err, data, src, dst, isColOriented, callback
+
+processFileCallback = (err, data, src, dst, isColOriented, callback) ->
+  if err
+    callback new Error("Error reading #{src}: #{err}")
+  else
+    result = convert data, isColOriented
+    if dst
+      write result, dst, (err) ->
+        if err then callback err
+        else callback undefined, result
+    else
+      process.nextTick ->
+        callback undefined, result
+
+processFileSync = (src, dst, isColOriented) ->
+  fs.statSync src  # throws an error if file does not exist
+  type = mime.lookup src
+  data = null
+  if type is "text/csv"
+    dataStr = fs.readFileSync src, "utf-8"
+    data = csvSync dataStr
+  else
+    # The excel.js module doesn't expose a synchronous API.
+    # For now, throw an exception.
+    throw new Error("Cannot read XLSX via sync API")
+  result = convert data, isColOriented
+  if dst
+    writeSync result, dst
+  return result
+
 
 
 # Exposing nearly everything for testing
@@ -161,4 +213,5 @@ exports.convert = convert
 exports.convertValue = convertValue
 exports.parseKeyName = parseKeyName
 exports.processFile = processFile
+exports.processFileSync = processFileSync
 exports.transpose = transpose

@@ -1,5 +1,7 @@
 processFile = require('../src/excel-as-json').processFile
+processFileSync = require('../src/excel-as-json').processFileSync
 fs = require 'fs'
+path = require 'path'
 
 # TODO: How to get chai defined in a more global way
 chai = require 'chai'
@@ -7,16 +9,23 @@ chai.should()
 expect = chai.expect;
 
 ROW_XLSX = 'data/row-oriented.xlsx'
+ROW_CSV = 'data/row-oriented.csv'
 ROW_JSON = 'build/row-oriented.json'
 COL_XLSX = 'data/col-oriented.xlsx'
 COL_JSON = 'build/col-oriented.json'
+DIRECTORY = 'build/dir'
 
 describe 'process file', ->
 
   it 'should notify on file does not exist', (done) ->
     processFile 'data/doesNotExist.xlsx', null, false, (err, data) ->
-      err.should.be.a 'string'
+      err.should.be.an 'error'
       expect(data).to.be.an 'undefined'
+
+      # Test sync API
+      expect(() ->
+        processFileSync 'data/doesNotExist', null, false
+      ).to.throw(Error)
       done()
 
 
@@ -26,14 +35,14 @@ describe 'process file', ->
 
 
   it 'should notify on read error', (done) ->
-    processFile 'data/row-oriented.csv', null, false, (err, data) ->
-      err.should.be.a 'string'
+    processFile 'data/image.gif', null, false, (err, data) ->
+      err.should.be.an 'error'
       expect(data).to.be.an 'undefined'
       done()
 
 
   it 'should not blow up on read error when no callback is provided', (done) ->
-    processFile 'data/row-oriented.csv', ->
+    processFile 'data/image.gif', ->
     done()
 
 
@@ -56,6 +65,14 @@ describe 'process file', ->
       JSON.stringify(data).should.equal resultStr
       done()
 
+  it 'should produce the same result on csv as equivalent xlsx file', (done) ->
+    processFile ROW_XLSX, null, false, (err, xlsxData) ->
+      expect(err).to.be.an 'undefined'
+      processFile ROW_CSV, null, false, (err, csvData) ->
+        expect(err).to.be.an 'undefined'
+        expect(xlsxData.length).to.equal(2)
+        expect(xlsxData).to.eql(csvData)
+        done()
 
   it 'should return a parsed object without writing a file', (done) ->
     # Ensure result file does not exit
@@ -69,11 +86,51 @@ describe 'process file', ->
       JSON.stringify(data).should.equal resultStr
       done()
 
+  it 'should create directory if directory does not exist', (done) ->
+    path1 = path.join(DIRECTORY, "out.json")
+    processFile ROW_CSV, path1, false, (err, data) ->
+      expect(err).to.be.an 'undefined'
+      fs.existsSync(path1).should.equal true
+
+      # Cleanup
+      fs.unlinkSync(path1)
+      fs.rmdirSync(DIRECTORY)
+
+      # Synchronous version
+      processFileSync ROW_CSV, path1, false
+      fs.existsSync(path1).should.equal true
+
+      # Cleanup
+      fs.unlinkSync(path1)
+      fs.rmdirSync(DIRECTORY)
+
+      # Coverage: when fs.mkdir returns an error
+      path2 = path.join(DIRECTORY, "subDirectory", "out.json")
+      processFile ROW_CSV, path2, false, (err, data) ->
+        expect(err).to.be.an 'error'
+
+      done()
+
 
   it 'should notify on write error', (done) ->
     processFile ROW_XLSX, 'build', false, (err, data) ->
-      expect(err).to.be.an 'string'
+      expect(err).to.be.an 'error'
       done()
+
+  it 'should produce same results in sync and async APIs for CSV', (done) ->
+    processFile ROW_CSV, ROW_JSON, false, (err, dataAsync) ->
+      expect(err).to.be.an 'undefined'
+      jsonAsync = fs.readFileSync ROW_JSON, "utf-8"
+      dataSync = processFileSync ROW_CSV, ROW_JSON, false
+      jsonSync = fs.readFileSync ROW_JSON, "utf-8"
+      expect(dataAsync).to.eql(dataSync)
+      expect(jsonAsync).to.equal(jsonSync)
+      done()
+
+  it 'should throw an error when attempting xlsx sync API', () ->
+    expect(() ->
+      processFileSync ROW_XLSX, ROW_JSON, false
+    ).to.throw(Error, /Cannot read XLSX via sync API/)
 
 
 
