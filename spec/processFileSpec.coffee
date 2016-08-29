@@ -87,22 +87,28 @@ describe 'process file', ->
       done()
 
   it 'should create directory if directory does not exist', (done) ->
-    path = path.join(DIRECTORY, "out.json")
-    processFile ROW_CSV, path, false, (err, data) ->
+    path1 = path.join(DIRECTORY, "out.json")
+    processFile ROW_CSV, path1, false, (err, data) ->
       expect(err).to.be.an 'undefined'
-      fs.existsSync(path).should.equal true
+      fs.existsSync(path1).should.equal true
 
       # Cleanup
-      fs.unlinkSync(path)
+      fs.unlinkSync(path1)
       fs.rmdirSync(DIRECTORY)
 
       # Synchronous version
-      processFileSync ROW_CSV, path, false
-      fs.existsSync(path).should.equal true
+      processFileSync ROW_CSV, path1, false
+      fs.existsSync(path1).should.equal true
 
       # Cleanup
-      fs.unlinkSync(path)
+      fs.unlinkSync(path1)
       fs.rmdirSync(DIRECTORY)
+
+      # Coverage: when fs.mkdir returns an error
+      path2 = path.join(DIRECTORY, "subDirectory", "out.json")
+      processFile ROW_CSV, path2, false, (err, data) ->
+        expect(err).to.be.an 'error'
+
       done()
 
 
