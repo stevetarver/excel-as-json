@@ -10,6 +10,7 @@ ROW_XLSX = 'data/row-oriented.xlsx'
 ROW_JSON = 'build/row-oriented.json'
 COL_XLSX = 'data/col-oriented.xlsx'
 COL_JSON = 'build/col-oriented.json'
+COL_JSON_NESTED = 'build/newDir/col-oriented.json'
 
 describe 'process file', ->
 
@@ -37,7 +38,7 @@ describe 'process file', ->
     done()
 
 
-  it 'should process row oriented Excel files and return the parsed object', (done) ->
+  it 'should process row oriented Excel files, write the result, and return the parsed object', (done) ->
     processFile ROW_XLSX, ROW_JSON, false, (err, data) ->
       expect(err).to.be.an 'undefined'
       result = JSON.parse(fs.readFileSync(ROW_JSON, 'utf8'))
@@ -47,10 +48,20 @@ describe 'process file', ->
       done()
 
 
-  it 'should process col oriented Excel files', (done) ->
+  it 'should process col oriented Excel files, write the result, and return the parsed object', (done) ->
     processFile COL_XLSX, COL_JSON, true, (err, data) ->
       expect(err).to.be.an 'undefined'
       result = JSON.parse(fs.readFileSync(COL_JSON, 'utf8'))
+      resultStr = '[{"firstName":"Jihad","lastName":"Saladin","address":{"street":"12 Beaver Court","city":"Snowmass","state":"CO","zip":81615},"isEmployee":true,"phones":[{"type":"home","number":"123.456.7890"},{"type":"work","number":"098.765.4321"}],"aliases":["stormagedden","bob"]},{"firstName":"Marcus","lastName":"Rivapoli","address":{"street":"16 Vail Rd","city":"Vail","state":"CO","zip":81657},"isEmployee":false,"phones":[{"type":"home","number":"123.456.7891"},{"type":"work","number":"098.765.4322"}],"aliases":["mac","markie"]}]'
+      JSON.stringify(result).should.equal resultStr
+      JSON.stringify(data).should.equal resultStr
+      done()
+
+
+  it 'should create the destination directory if it does not exist', (done) ->
+    processFile COL_XLSX, COL_JSON_NESTED, true, (err, data) ->
+      expect(err).to.be.an 'undefined'
+      result = JSON.parse(fs.readFileSync(COL_JSON_NESTED, 'utf8'))
       resultStr = '[{"firstName":"Jihad","lastName":"Saladin","address":{"street":"12 Beaver Court","city":"Snowmass","state":"CO","zip":81615},"isEmployee":true,"phones":[{"type":"home","number":"123.456.7890"},{"type":"work","number":"098.765.4321"}],"aliases":["stormagedden","bob"]},{"firstName":"Marcus","lastName":"Rivapoli","address":{"street":"16 Vail Rd","city":"Vail","state":"CO","zip":81657},"isEmployee":false,"phones":[{"type":"home","number":"123.456.7891"},{"type":"work","number":"098.765.4322"}],"aliases":["mac","markie"]}]'
       JSON.stringify(result).should.equal resultStr
       JSON.stringify(data).should.equal resultStr

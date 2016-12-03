@@ -32,3 +32,8 @@ describe 'convert value', ->
     convertValue('false').should.equal false
     convertValue('FALSE').should.equal false
     convertValue('fAlSe').should.equal false
+
+
+  it 'should return blank strings as strings', ->
+    convertValue('').should.equal ''
+    convertValue(' ').should.equal ' '

@@ -46,9 +46,12 @@ convertValueList = (list) ->
 
 
 # Convert values to native types
-# Assume: all values from the excel module are text
+# Note: all values from the excel module are text
 convertValue = (value) ->
-  if isFinite(value)
+  # isFinite returns true for empty or blank strings, check for those first
+  if value.length == 0 || !/\S/.test(value)
+    value
+  else if isFinite(value)
     Number(value)
   else
     testVal = value.toLowerCase()
