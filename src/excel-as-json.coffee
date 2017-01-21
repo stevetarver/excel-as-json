@@ -137,7 +137,7 @@ write = (data, dst, callback) ->
 #   will return the parsed object tree in the callback
 #
 # TODO: Do we need a processSync
-processFile = (src, dst, isColOriented=false, callback=undefined) ->
+processFile = (src, sheet='1', dst, isColOriented=false, callback=undefined) ->
   # provide a callback if the user did not
   if !callback then callback = (err, data) ->
   # NOTE: 'excel' does not properly bubble file not found and prints
@@ -145,7 +145,7 @@ processFile = (src, dst, isColOriented=false, callback=undefined) ->
   if not fs.existsSync src
     callback "Cannot find src file #{src}"
   else
-    excel src, (err, data) ->
+    excel src, sheet, (err, data) ->
       if err
         callback "Error reading #{src}: #{err}"
       else
@@ -156,7 +156,6 @@ processFile = (src, dst, isColOriented=false, callback=undefined) ->
             else callback undefined, result
         else
           callback undefined, result
-
 
 # Exposing nearly everything for testing
 exports.assign = assign
