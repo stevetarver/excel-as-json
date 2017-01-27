@@ -16,8 +16,11 @@
 #  From a shell
 #    coffee src/ExcelToJson.coffee
 #
-fs = require 'fs'
+fs = require 'fs-extra'
 path = require 'path'
+async = require 'async'
+math = require 'mathjs'
+_ = require 'lodash'
 excel = require 'excel'
 
 BOOLTEXT = ['true', 'false']
@@ -92,70 +95,140 @@ assign = (obj, key, value) ->
       obj[keyName] = convertValue value
 
 
-# Transpose a 2D array
-transpose = (matrix) ->
-  (t[i] for t in matrix) for i in [0...matrix[0].length]
-
-
 # Convert 2D array to nested objects. If row oriented data, row 0 is dotted key names.
 # Column oriented data is transposed
-convert = (data, isColOriented = false) ->
-  data = transpose data if isColOriented
-
+convert = (data, options) ->
+  options = options || {}
+  matrix = math.matrix data
+  if options.skipRows or options.skipColumns
+    size = matrix.size()
+    sizeRows = size[0]
+    sizeColumns = size[1]
+    rangeRows = math.range(options.skipRows or 0, sizeRows)
+    rangeColumns = math.range(options.skipColumns or 0, sizeColumns)
+    matrix = matrix.subset math.index rangeRows, rangeColumns
+  matrix = math.transpose matrix if options.isColumnsOriented
+  data = matrix._data
+  
   keys = data[0]
   rows = data[1..]
-
+  
   result = []
   for row in rows
     item = {}
     assign(item, keys[index], value) for value, index in row
     result.push item
   return result
+  
+# Generate one file per column
+# @param {Object|Array} result The data read from excel sheet 
+# @options options {Object}
+# @params {String} filenameFromField name of field that identify the name of file
+generateOneFilePerColumn = (result, options) ->
+  for data, i in result
+    filenameFromField = options.filenameFromField if options.filenameFromField
+    filename = data[filenameFromField] + '.json'
+    delete data[filenameFromField]
+    sheetOptions = _.clone(options)
+    sheetOptions.name = filename
+    {data: data, options: sheetOptions}
+
+    
+
 
 
 # Write array as JSON data to file
-# call back is callback(err)
-write = (data, dst, callback) ->
-  # Create the target directory if it does not exist
+write = (data, dst, options, callback) ->
+  if typeof options is 'function'
+    callback = options
+    options = {}
+
+  extName = path.extname(dst)
+  # Verify if destination contain a full path
+  if extName is '.json'
+    # Create the target directory if it does not exist
+    dir = path.dirname(dst)
+  else if options.name
+    subfolder = options.subfolder or '/'
+    dst = dst + subfolder + options.name
+  else
+    return callback "Error destination without name of file #{dst}"
+    
   dir = path.dirname(dst)
-  fs.mkdir dir if !fs.existsSync(dir)
+  fs.mkdirsSync dir
   fs.writeFile dst, JSON.stringify(data, null, 2), (err) ->
     if err then callback "Error writing file #{dst}: #{err}"
-    else callback undefined
+    else callback()
 
 
-# src: xlsx file that we will read sheet 0 of
-# dst: file path to write json to. If null, simply return the result
-# isColOriented: are objects stored in excel rows or columns
-# callback(err, data): callback for completion notification
+# @param {String} src xlsx file that we will read sheet 0 of
+# @param {String} dst file path to write json to. If null, simply return the result
+# @options options {Object}
+# @params {Number | Array[Object]} sheets The number or array of object that specify sheet/s to read
+# @params {Boolean} isColumnsOriented are objects stored in excel rows or columns
+# @params {Number} skipRows number of rows to skip
+# @params {Number} skipColumns number of columns to skip
+# @callback {Function} callback The callback function
+# @param {Error} err
 #
 # process(src, dst)
 #   will write a row oriented xlsx to file with no notification
-# process(src, dst, true)
-#   will write a col oriented xlsx to file with no notification
-# process(src, null, true, callback)
+# process(src, dst, options)
+#   will write a with options xlsx to file with no notification
+# process(src, null, options, callback)
 #   will return the parsed object tree in the callback
 #
-# TODO: Do we need a processSync
-processFile = (src, dst, isColOriented=false, callback=undefined) ->
+processFile = (src, dst, options, callback) ->
+  if typeof options is 'function' and typeof callback is 'undefined'
+    callback = options
+    options = {}
   # provide a callback if the user did not
-  if !callback then callback = (err, data) ->
+  if !callback then callback = () ->
   # NOTE: 'excel' does not properly bubble file not found and prints
   #       an ugly error we can't trap, so look for this common error first
   if not fs.existsSync src
     callback "Cannot find src file #{src}"
   else
-    excel src, (err, data) ->
-      if err
-        callback "Error reading #{src}: #{err}"
-      else
-        result = convert data, isColOriented
-        if dst
-          write result, dst, (err) ->
-            if err then callback err
-            else callback undefined, result
+    results = []
+    options = options || {}
+    sheets = options.sheets
+    delete options.sheets
+    if sheets
+      if typeof sheets is 'number'
+        sheets = [].concat({index: sheets})
+    else
+      # Default sheet is one
+      sheets = [].concat({index: 1})
+
+    async.eachSeries sheets, (sheet, cb) ->
+      excel src, sheet.index, (err, data) ->
+        if err
+          cb "Error reading file #{src}: #{err}"
         else
-          callback undefined, result
+          globalOptions = _.clone options
+          sheetOptions = _.merge globalOptions, sheet
+          result = convert data, sheetOptions
+          if dst
+            if sheetOptions.oneFilePerColumn
+              result = generateOneFilePerColumn(result, sheetOptions)
+              async.eachSeries result, (r, cbMultipleFiles) =>
+                write r.data, dst, r.options, (err) ->
+                  if err then return cbMultipleFiles err
+                  results.push(r.data)
+                  cbMultipleFiles()
+              , cb
+            else
+              write result, dst, sheetOptions, (err) ->
+                if err then return cb err
+                results.push(result)
+                cb()
+          else
+            results.push(result)
+            cb()
+    , (err) ->
+      if (err) then return callback err
+      if (results.length is 1) then return callback undefined, results[0]
+      callback undefined, results
 
 
 # Exposing nearly everything for testing
@@ -164,4 +237,3 @@ exports.convert = convert
 exports.convertValue = convertValue
 exports.parseKeyName = parseKeyName
 exports.processFile = processFile
-exports.transpose = transpose

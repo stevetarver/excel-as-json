@@ -1,9 +1,5 @@
 convert = require('../src/excel-as-json').convert
-
-# TODO: How to get chai defined in a more global way
-chai = require 'chai'
-chai.should()
-expect = chai.expect;
+should = require('./helpers').should
 
 describe 'convert', ->
 
@@ -26,7 +22,7 @@ describe 'convert', ->
     data = [['a', 1],
             ['b', 2],
             ['c', 3]]
-    result = convert data, true
+    result = convert data, {isColumnsOriented: true}
     JSON.stringify(result).should.equal '[{"a":1,"b":2,"c":3}]'
 
 
@@ -34,7 +30,7 @@ describe 'convert', ->
     data = [['a', 1, 4 ],
             ['b', 2, 5 ],
             ['c', 3, 6 ]]
-    result = convert data, true
+    result = convert data, {isColumnsOriented: true}
     JSON.stringify(result).should.equal '[{"a":1,"b":2,"c":3},{"a":4,"b":5,"c":6}]'
 
 
@@ -100,4 +96,29 @@ describe 'convert', ->
     result = convert data
     JSON.stringify(result).should.equal '[{"a":-99,"b":"test","c":2e+64}]'
 
+describe 'skip', ->
+
+  it 'should skip first n rows', ->
+    data = [['skip', 'first', 'row']
+            ['a', 'b', 'c'],
+            [ 1,   2,   3 ],
+            [ 4,   5,   6 ]]
+    result = convert data, {skipRows: 1}
+    JSON.stringify(result).should.equal '[{"a":1,"b":2,"c":3},{"a":4,"b":5,"c":6}]'
+
+  it 'should skip first n columns', ->
+    data = [['a', 'b', 'c'],
+            [ 1,   2,   3 ],
+            [ 4,   5,   6 ]]
+    result = convert data, {skipColumns: 1}
+    JSON.stringify(result).should.equal '[{"b":2,"c":3},{"b":5,"c":6}]'
+
+  it 'should skip first n rows and m columsn', ->
+    data = [['skip', 'first', 'row']
+            ['a', 'b', 'c'],
+            [ 1,   2,   3 ],
+            [ 4,   5,   6 ]]
+    result = convert data, {skipRows: 1, skipColumns: 1}
+    JSON.stringify(result).should.equal '[{"b":2,"c":3},{"b":5,"c":6}]'
+    
 

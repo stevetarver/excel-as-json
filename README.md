@@ -22,23 +22,45 @@ async facilities are provided.
 
 ```js
 convertExcel = require('excel-as-json').processFile;
-convertExcel(<src>, <dst>, isColOriented, callback);
+convertExcel(<src>, <dst>, isColumnsOriented, callback);
 ```
 
 * src: path to source Excel file (xlsx only) - will read sheet 0
 * dst: path to destination JSON file. If null, simply return the parsed object tree
-* isColOriented: is an Excel row an object, or is a column an object (Default: false)
+* options: the options object
+    * isColumnsOriented: is an Excel row an object, or is a column an object (Default: false)
+    * oneFilePerColumn: Create new file per each column (Default: false),
+    * filenameFromField: If `oneFilePerColumn` is enabled specify the field to identify the name of file
+    * sheets: Specific the index of sheet to read. See example for more complex configuration:
+    ```js
+    // specific only sheet; default to 1;
+    options = {sheets: 2}
+    // specific sheets and custom name
+    options = {sheets: [{index: 2, name: test.json}]
+    // complex options object with multiple sheets. Sheet options override global options
+    options = {
+        isColumnsOriented: false,
+        skipRows: 1,
+        skipColumns: 1
+        sheets: [
+            {index: 1, subfolder: '/test/', name: 'it.json'},
+            {index: 2, subfolder: '/test/', name: 'en.json', skipRows: 1, skipColumns: 1},
+            {index: 3, subfolder: '/splitted/', isColumnsOriented: true, oneFilePerColumn: true, filenameFromField: 'key'}
+            ]
+    }
+    ```
+       
 * callback(err, data): callback for completion notification
 
 With these arguments, you can:
 
 * convertExcel(src, dst)
   will write a row oriented xlsx to file with no notification
-* convertExcel(src, dst, true)
+* convertExcel(src, dst, options)
   will write a col oriented xlsx to file with no notification
-* convertExcel(src, dst, true, callback)
+* convertExcel(src, dst, options, callback)
   will write a col oriented xlsx to file and notify with errors and data
-* convertExcel(src, null, true, callback)
+* convertExcel(src, null, options, callback)
   will return errors and the parsed object tree in the callback
 
 Convert a row/col oriented Excel file to JSON as a development task and
@@ -47,9 +69,9 @@ log errors:
 ```CoffeeScript
 convertExcel = require('excel-as-json').processFile
 
-convertExcel 'row.xlsx', 'row.json', false, (err, data) ->
+convertExcel 'row.xlsx', 'row.json', {isColumnsOriented: false}, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
-convertExcel 'col.xlsx', 'col.json', true, (err, data) ->
+convertExcel 'col.xlsx', 'col.json', {isColumnsOriented: true}, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
 ```
 Convert Excel file to an object tree and use that tree. Note that 
@@ -59,10 +81,10 @@ row or column oriented.
 ```CoffeeScript
 convertExcel = require('excel-as-json').processFile
 
-convertExcel 'row.xlsx', undefined, false, (err, data) ->
+convertExcel 'row.xlsx', undefined, {isColumnsOriented: false}, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
-convertExcel 'col.xlsx', undefined, true, (err, data) ->
+convertExcel 'col.xlsx', undefined, {isColumnsOriented: true}, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
 ```
