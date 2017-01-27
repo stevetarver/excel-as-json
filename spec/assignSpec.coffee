@@ -1,9 +1,8 @@
 assign = require('../src/excel-as-json').assign
+should = require('./helpers').should
 
-# TODO: How to get chai defined in a more global way
-chai = require 'chai'
-chai.should()
-expect = chai.expect;
+# NOTE: the excel package uses '' for all empty cells
+EMPTY_CELL = ''
 
 describe 'assign', ->
 
@@ -93,3 +92,41 @@ describe 'assign', ->
     subject = {}
     assign subject, 'foo.bar[0]', 'peter;paul;mary'
     subject.foo.bar.should.equal 'peter;paul;mary'
+
+
+  it 'should omit empty scalar fields when directed', ->
+    o =
+      omitEmptyFields: true
+    subject = {}
+    assign subject, 'foo', EMPTY_CELL, o
+    subject.should.not.have.property 'foo'
+
+
+  it 'should omit empty nested scalar fields when directed', ->
+    o =
+      omitEmptyFields: true
+    subject = {}
+    assign subject, 'foo.bar', EMPTY_CELL, o
+    subject.should.have.property 'foo'
+    subject.foo.should.not.have.property 'bar'
+
+
+  it 'should omit nested array fields when directed', ->
+    o =
+      omitEmptyFields: true
+
+    # specified as an entire list
+    subject = {}
+    assign subject, 'foo[]', EMPTY_CELL, o
+    subject.should.not.have.property 'foo'
+
+    # specified as a list
+    subject = {}
+    assign subject, 'foo[0]', EMPTY_CELL, o
+    subject.should.not.have.property 'foo'
+
+    # specified as a list of objects
+    subject = {}
+    assign subject, 'foo[0].bar', 'bazz', o
+    assign subject, 'foo[1].bar', EMPTY_CELL, o
+    subject.foo[1].should.not.have.property 'bar'

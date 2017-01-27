@@ -1,9 +1,6 @@
 parseKeyName = require('../src/excel-as-json').parseKeyName
-
-# TODO: How to get chai defined in a more global way
-chai = require 'chai'
-chai.should()
-expect = chai.expect;
+expect = require('./helpers').expect
+should = require('./helpers').should
 
 
 describe 'parse key name', ->
