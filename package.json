@@ -28,7 +28,11 @@
   },
   "homepage": "https://github.com/stevetarver/excel-as-json",
   "dependencies": {
-    "excel": "0.1.7"
+    "async": "^2.1.4",
+    "excel": "0.1.7",
+    "lodash": "^4.17.4",
+    "mathjs": "^3.9.0",
+    "fs-extra": "^2.0.0"
   },
   "devDependencies": {
     "chai": "3.5.0",

@@ -1,9 +1,5 @@
 convertValue = require('../src/excel-as-json').convertValue
-
-# TODO: How to get chai defined in a more global way
-chai = require 'chai'
-chai.should()
-expect = chai.expect;
+should = require('./helpers').should
 
 describe 'convert value', ->
 
