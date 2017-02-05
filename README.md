@@ -22,23 +22,24 @@ async facilities are provided.
 
 ```js
 convertExcel = require('excel-as-json').processFile;
-convertExcel(<src>, <dst>, isColOriented, callback);
+convertExcel(<src>, <sheet>, <dst>, isColOriented, callback);
 ```
 
-* src: path to source Excel file (xlsx only) - will read sheet 0
+* src: path to source Excel file (xlsx only)
+* sheet: the number of the sheet to process.  The first sheet is 1.  (Default: 1)
 * dst: path to destination JSON file. If null, simply return the parsed object tree
 * isColOriented: is an Excel row an object, or is a column an object (Default: false)
 * callback(err, data): callback for completion notification
 
 With these arguments, you can:
 
-* convertExcel(src, dst)
+* convertExcel(src, sheet, dst)
   will write a row oriented xlsx to file with no notification
-* convertExcel(src, dst, true)
+* convertExcel(src, sheet, dst, true)
   will write a col oriented xlsx to file with no notification
-* convertExcel(src, dst, true, callback)
+* convertExcel(src, sheet, dst, true, callback)
   will write a col oriented xlsx to file and notify with errors and data
-* convertExcel(src, null, true, callback)
+* convertExcel(src, null, null, true, callback)
   will return errors and the parsed object tree in the callback
 
 Convert a row/col oriented Excel file to JSON as a development task and
@@ -47,9 +48,9 @@ log errors:
 ```CoffeeScript
 convertExcel = require('excel-as-json').processFile
 
-convertExcel 'row.xlsx', 'row.json', false, (err, data) ->
+convertExcel 'row.xlsx', 1, 'row.json', false, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
-convertExcel 'col.xlsx', 'col.json', true, (err, data) ->
+convertExcel 'col.xlsx', 1, 'col.json', true, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
 ```
 Convert Excel file to an object tree and use that tree. Note that 
@@ -59,10 +60,10 @@ row or column oriented.
 ```CoffeeScript
 convertExcel = require('excel-as-json').processFile
 
-convertExcel 'row.xlsx', undefined, false, (err, data) ->
+convertExcel 'row.xlsx', 1, undefined, false, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
-convertExcel 'col.xlsx', undefined, true, (err, data) ->
+convertExcel 'col.xlsx', 1, undefined, true, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
 ```
@@ -299,3 +300,6 @@ excel dependency - although questionable, they appear to be benign.
 - Changed process() to processFile() to avoid name collision with node's process object
 - Automatically convert text numbers and booleans to native values
 - Create destination directory if it does not exist
+
+### 2.0.0
+- Changed processFile() to accept the sheet number as the second argument (breaking API change).
