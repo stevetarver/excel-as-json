@@ -11,10 +11,16 @@
 
 # Convert Excel Files to JSON
 
-## Install
+## What
+
+Parse Excel xlsx files into a list of javascript objects and optionally write that list as a JSON encoded file.
+
+You may organize Excel data by columns or rows where the first column or row contains object key names and the remaining columns/rows contain object values.
 
 Expected use is offline translation of Excel data to JSON files, although
-async facilities are provided.
+all methods are exported for other uses.
+
+## Install
 
 ```$ npm install excel-as-json --save-dev```
 
@@ -22,25 +28,29 @@ async facilities are provided.
 
 ```js
 convertExcel = require('excel-as-json').processFile;
-convertExcel(<src>, <sheet>, <dst>, isColOriented, callback);
+convertExcel(src, dst, options, callback);
 ```
 
 * src: path to source Excel file (xlsx only)
-* sheet: the number of the sheet to process.  The first sheet is 1.  (Default: 1)
 * dst: path to destination JSON file. If null, simply return the parsed object tree
-* isColOriented: is an Excel row an object, or is a column an object (Default: false)
+* options: an object containing 
+    * sheet: 1 based sheet index as text - default '1' 
+    * isColOriented: are object values in columns with keys in column A - default false
+    * omitEmptyFields: omit empty Excel fields from JSON output - default false
 * callback(err, data): callback for completion notification
+
+**NOTE** If options are not specified, defaults are used.
 
 With these arguments, you can:
 
-* convertExcel(src, sheet, dst)
-  will write a row oriented xlsx to file with no notification
-* convertExcel(src, sheet, dst, true)
-  will write a col oriented xlsx to file with no notification
-* convertExcel(src, sheet, dst, true, callback)
-  will write a col oriented xlsx to file and notify with errors and data
-* convertExcel(src, null, null, true, callback)
-  will return errors and the parsed object tree in the callback
+* convertExcel(src, dst) <br/>
+  will write a row oriented xlsx sheet 1 to `dst` as JSON with no notification
+* convertExcel(src, dst, {isColOriented: true}) <br/>
+  will write a col oriented xlsx sheet 1 to file with no notification
+* convertExcel(src, dst, {isColOriented: true}, callback) <br/>
+  will write a col oriented xlsx to file and notify with errors and parsed data
+* convertExcel(src, null, null, callback) <br/>
+  will parse a row oriented xslx using default options and return errors and the parsed data in the callback
 
 Convert a row/col oriented Excel file to JSON as a development task and
 log errors:
@@ -48,11 +58,23 @@ log errors:
 ```CoffeeScript
 convertExcel = require('excel-as-json').processFile
 
-convertExcel 'row.xlsx', 1, 'row.json', false, (err, data) ->
+options = 
+    sheet:'1'
+    isColOriented: false
+    omitEmtpyFields: false
+
+convertExcel 'row.xlsx', 'row.json', options, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
-convertExcel 'col.xlsx', 1, 'col.json', true, (err, data) ->
+
+options = 
+    sheet:'1'
+    isColOriented: true
+    omitEmtpyFields: false
+
+convertExcel 'col.xlsx', 'col.json', options, (err, data) ->
 	if err then console.log "JSON conversion failure: #{err}"
 ```
+
 Convert Excel file to an object tree and use that tree. Note that 
 properly formatted data will convert to the same object tree whether
 row or column oriented.
@@ -60,10 +82,11 @@ row or column oriented.
 ```CoffeeScript
 convertExcel = require('excel-as-json').processFile
 
-convertExcel 'row.xlsx', 1, undefined, false, (err, data) ->
+convertExcel 'row.xlsx', undefined, undefined, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
-convertExcel 'col.xlsx', 1, undefined, true, (err, data) ->
+	
+convertExcel 'col.xlsx', undefined, {isColOriented: true}, (err, data) ->
 	if err throw err
 	doSomethingInteresting data
 ```
@@ -296,10 +319,15 @@ excel dependency - although questionable, they appear to be benign.
 
 ## Change History
 
+### 2.0.0
+- **Breaking changes to most function signatures**
+- Replace single option `isColOriented` with an options object to try to stabilize the processFile signature allowing future non-breaking feature additions.
+- Add `sheet` option to specify a 1-based index into the Excel sheet collection - all of your data in a single Excel workbook.
+- Add `omitEmptyFields` option that removes an object key-value if the corresponding Excel cell is empty.
+
+
 ### 1.0.0
 - Changed process() to processFile() to avoid name collision with node's process object
 - Automatically convert text numbers and booleans to native values
 - Create destination directory if it does not exist
 
-### 2.0.0
-- Changed processFile() to accept the sheet number as the second argument (breaking API change).

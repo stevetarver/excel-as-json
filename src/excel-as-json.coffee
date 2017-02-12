@@ -14,7 +14,7 @@
 #
 # USE:
 #  From a shell
-#    coffee src/ExcelToJson.coffee
+#    coffee src/excel-as-json.coffee
 #
 fs = require 'fs'
 path = require 'path'
@@ -62,7 +62,7 @@ convertValue = (value) ->
 
 
 # Assign a value to a dotted property key - set values on sub-objects
-assign = (obj, key, value) ->
+assign = (obj, key, value, options) ->
   # On first call, a key is a string. Recursed calls, a key is an array
   key = key.split '.' unless typeof key is 'object'
   # Array element accessors look like phones[0].type or aliases[]
@@ -77,19 +77,21 @@ assign = (obj, key, value) ->
       # else set this value to an array large enough to contain this index
       else
         obj[keyName] = ({} for i in [0..index])
-      assign obj[keyName][index], key, value
+      assign obj[keyName][index], key, value, options
     else
       obj[keyName] ?= {}
-      assign obj[keyName], key, value
+      assign obj[keyName], key, value, options
   else
     if keyIsList and index?
       console.error "WARNING: Unexpected key path terminal containing an indexed list for <#{keyName}>"
       console.error "WARNING: Indexed arrays indicate a list of objects and should not be the last element in a key path"
       console.error "WARNING: The last element of a key path should be a key name or flat array. E.g. alias, aliases[]"
     if (keyIsList and not index?)
-      obj[keyName] = convertValueList(value.split ';')
+      if !(options.omitEmptyFields && value == '')
+        obj[keyName] = convertValueList(value.split ';')
     else
-      obj[keyName] = convertValue value
+      if !(options.omitEmptyFields && value == '')
+        obj[keyName] = convertValue value
 
 
 # Transpose a 2D array
@@ -99,8 +101,8 @@ transpose = (matrix) ->
 
 # Convert 2D array to nested objects. If row oriented data, row 0 is dotted key names.
 # Column oriented data is transposed
-convert = (data, isColOriented = false) ->
-  data = transpose data if isColOriented
+convert = (data, options) ->
+  data = transpose data if options.isColOriented
 
   keys = data[0]
   rows = data[1..]
@@ -108,12 +110,12 @@ convert = (data, isColOriented = false) ->
   result = []
   for row in rows
     item = {}
-    assign(item, keys[index], value) for value, index in row
+    assign(item, keys[index], value, options) for value, index in row
     result.push item
   return result
 
 
-# Write array as JSON data to file
+# Write JSON encoded data to file
 # call back is callback(err)
 write = (data, dst, callback) ->
   # Create the target directory if it does not exist
@@ -126,30 +128,69 @@ write = (data, dst, callback) ->
 
 # src: xlsx file that we will read sheet 0 of
 # dst: file path to write json to. If null, simply return the result
-# isColOriented: are objects stored in excel rows or columns
+# options: see below
 # callback(err, data): callback for completion notification
 #
-# process(src, dst)
-#   will write a row oriented xlsx to file with no notification
-# process(src, dst, true)
-#   will write a col oriented xlsx to file with no notification
-# process(src, null, true, callback)
-#   will return the parsed object tree in the callback
+# options:
+#   sheet:           string;  1:     numeric, 1-based index of target sheet
+#   isColOriented:   boolean: false; are objects stored in excel columns; key names in col A
+#   omitEmptyFields: boolean: false: do not include keys with empty values in json output. empty values are stored as ''
 #
-# TODO: Do we need a processSync
-processFile = (src, sheet='1', dst, isColOriented=false, callback=undefined) ->
+# convertExcel(src, dst) <br/>
+#   will write a row oriented xlsx sheet 1 to `dst` as JSON with no notification
+# convertExcel(src, dst, {isColOriented: true}) <br/>
+#   will write a col oriented xlsx sheet 1 to file with no notification
+# convertExcel(src, dst, {isColOriented: true}, callback) <br/>
+#   will write a col oriented xlsx to file and notify with errors and parsed data
+# convertExcel(src, null, null, callback) <br/>
+#   will parse a row oriented xslx using default options and return errors and the parsed data in the callback
+#
+_DEFAULT_OPTIONS =
+  sheet: '1'
+  isColOriented: false
+  omitEmptyFields: false
+
+# Ensure options sane, provide defaults as appropriate
+_validateOptions = (options) ->
+  if !options
+    options = _DEFAULT_OPTIONS
+  else
+    if !options.hasOwnProperty('sheet')
+      options.sheet = '1'
+    else
+      # ensure sheet is a text representation of a number
+      if !isNaN(parseFloat(options.sheet)) && isFinite(options.sheet)
+        if options.sheet < 1
+          options.sheet = '1'
+        else
+          # could be 3 or '3'; force to be '3'
+          options.sheet = '' + options.sheet
+      else
+        # something bizarre like true, [Function: isNaN], etc
+        options.sheet = '1'
+    if !options.hasOwnProperty('isColOriented')
+      options.isColOriented = false
+    if !options.hasOwnProperty('omitEmptyFields')
+      options.omitEmptyFields = false
+  options
+
+
+processFile = (src, dst, options=_DEFAULT_OPTIONS, callback=undefined) ->
+  options = _validateOptions(options)
+
   # provide a callback if the user did not
   if !callback then callback = (err, data) ->
+
   # NOTE: 'excel' does not properly bubble file not found and prints
   #       an ugly error we can't trap, so look for this common error first
   if not fs.existsSync src
     callback "Cannot find src file #{src}"
   else
-    excel src, sheet, (err, data) ->
+    excel src, options.sheet, (err, data) ->
       if err
         callback "Error reading #{src}: #{err}"
       else
-        result = convert data, isColOriented
+        result = convert data, options
         if dst
           write result, dst, (err) ->
             if err then callback err
@@ -157,10 +198,14 @@ processFile = (src, sheet='1', dst, isColOriented=false, callback=undefined) ->
         else
           callback undefined, result
 
-# Exposing nearly everything for testing
+# This is the single expected module entry point
+exports.processFile = processFile
+
+# Unsupported use
+# Exposing remaining functionality for unexpected use cases, testing, etc.
 exports.assign = assign
 exports.convert = convert
 exports.convertValue = convertValue
 exports.parseKeyName = parseKeyName
-exports.processFile = processFile
+exports._validateOptions = _validateOptions
 exports.transpose = transpose
