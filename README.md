@@ -319,7 +319,12 @@ excel dependency - although questionable, they appear to be benign.
 
 ## Change History
 
+### 2.0.1
+- Fix creating missing destination directories to complete prior to writing file
+
+
 ### 2.0.0
+
 - **Breaking changes to most function signatures**
 - Replace single option `isColOriented` with an options object to try to stabilize the processFile signature allowing future non-breaking feature additions.
 - Add `sheet` option to specify a 1-based index into the Excel sheet collection - all of your data in a single Excel workbook.
@@ -327,6 +332,7 @@ excel dependency - although questionable, they appear to be benign.
 
 
 ### 1.0.0
+
 - Changed process() to processFile() to avoid name collision with node's process object
 - Automatically convert text numbers and booleans to native values
 - Create destination directory if it does not exist

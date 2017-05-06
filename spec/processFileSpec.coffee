@@ -75,7 +75,7 @@ describe 'process file', ->
       isColOriented: false
       omitEmptyFields: false
 
-    processFile ROW_XLSX, ROW_JSON, {sheet:'1',isColOriented:false,omitEmptyFields:false}, (err, data) ->
+    processFile ROW_XLSX, ROW_JSON, options, (err, data) ->
       expect(err).to.be.an 'undefined'
       result = JSON.parse(fs.readFileSync(ROW_JSON, 'utf8'))
       JSON.stringify(result).should.equal ROW_SHEET_1_JSON
@@ -163,8 +163,8 @@ describe 'process file', ->
 
 
 #=============================== Coverage summary ===============================
-#  Statements   : 100% ( 138/138 )
+#  Statements   : 100% ( 128/128 )
 #  Branches     : 100% ( 55/55 )
 #  Functions    : 100% ( 14/14 )
-#  Lines        : 100% ( 106/106 )
+#  Lines        : 100% ( 100/100 )
 #================================================================================
