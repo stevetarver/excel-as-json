@@ -120,7 +120,7 @@ convert = (data, options) ->
 write = (data, dst, callback) ->
   # Create the target directory if it does not exist
   dir = path.dirname(dst)
-  fs.mkdir dir if !fs.existsSync(dir)
+  fs.mkdirSync dir if !fs.existsSync(dir)
   fs.writeFile dst, JSON.stringify(data, null, 2), (err) ->
     if err then callback "Error writing file #{dst}: #{err}"
     else callback undefined
