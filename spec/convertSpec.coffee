@@ -8,6 +8,7 @@ expect = chai.expect;
 DEFAULT_OPTIONS =
   isColOriented: false
   omitEmptyFields: false
+  convertTextToNumber: true
 
 describe 'convert', ->
 
@@ -138,4 +139,28 @@ describe 'convert', ->
     result = convert data, DEFAULT_OPTIONS
     JSON.stringify(result).should.equal '[{"a":-99,"b":"test","c":2e+64}]'
 
+
+  it 'should not convert text that looks like numbers to numbers when directed', ->
+    o =
+      convertTextToNumber: false
+
+    data = [[  'a',   'b',    'c',    ],
+            [ '-99', '00938', '02e64' ]]
+    result = convert data, o
+    result[0].should.have.property('a', '-99')
+    result[0].should.have.property('b', '00938')
+    result[0].should.have.property('c', '02e64')
+
+
+  it 'should not convert numbers to text when convertTextToNumber = false', ->
+    o =
+      convertTextToNumber: false
+
+    data = [[  'a', 'b', 'c',  'd' ],
+            [ -99,  938, 2e64, 0x4aa ]]
+    result = convert data, o
+    result[0].should.have.property('a', -99)
+    result[0].should.have.property('b', 938)
+    result[0].should.have.property('c', 2e+64)
+    result[0].should.have.property('d', 1194)
 

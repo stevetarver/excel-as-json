@@ -156,6 +156,20 @@ describe 'process file', ->
       done()
 
 
+  it 'should not convert text that looks like a number to a number when directed', (done) ->
+    options =
+      sheet:'1'
+      isColOriented: false
+      omitEmptyFields: false
+      convertTextToNumber: false
+
+    processFile ROW_XLSX, undefined, options, (err, data) ->
+      expect(err).to.be.an 'undefined'
+      data[0].address.should.have.property('zip', '81615')
+      data[1].address.should.have.property('zip', '81657')
+      done()
+
+
   it 'should notify on write error', (done) ->
     processFile ROW_XLSX, 'build', TEST_OPTIONS, (err, data) ->
       expect(err).to.be.an 'string'
@@ -163,8 +177,8 @@ describe 'process file', ->
 
 
 #=============================== Coverage summary ===============================
-#  Statements   : 100% ( 128/128 )
-#  Branches     : 100% ( 55/55 )
+#  Statements   : 100% ( 133/133 )
+#  Branches     : 100% ( 61/61 )
 #  Functions    : 100% ( 14/14 )
-#  Lines        : 100% ( 100/100 )
+#  Lines        : 100% ( 106/106 )
 #================================================================================

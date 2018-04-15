@@ -41,18 +41,21 @@ parseKeyName = (key) ->
 
 
 # Convert a list of values to a list of more native forms
-convertValueList = (list) ->
-  (convertValue(item) for item in list)
+convertValueList = (list, options) ->
+  (convertValue(item, options) for item in list)
 
 
 # Convert values to native types
 # Note: all values from the excel module are text
-convertValue = (value) ->
+convertValue = (value, options) ->
   # isFinite returns true for empty or blank strings, check for those first
   if value.length == 0 || !/\S/.test(value)
     value
   else if isFinite(value)
-    Number(value)
+    if options.convertTextToNumber
+      Number(value)
+    else
+      value
   else
     testVal = value.toLowerCase()
     if testVal in BOOLTEXT
@@ -88,12 +91,12 @@ assign = (obj, key, value, options) ->
       console.error "WARNING: The last element of a key path should be a key name or flat array. E.g. alias, aliases[]"
     if (keyIsList and not index?)
       if value != ''
-        obj[keyName] = convertValueList(value.split ';')
+        obj[keyName] = convertValueList(value.split(';'), options)
       else if !options.omitEmptyFields
         obj[keyName] = []
     else
       if !(options.omitEmptyFields && value == '')
-        obj[keyName] = convertValue value
+        obj[keyName] = convertValue(value, options)
 
 
 # Transpose a 2D array
@@ -134,9 +137,11 @@ write = (data, dst, callback) ->
 # callback(err, data): callback for completion notification
 #
 # options:
-#   sheet:           string;  1:     numeric, 1-based index of target sheet
-#   isColOriented:   boolean: false; are objects stored in excel columns; key names in col A
-#   omitEmptyFields: boolean: false: do not include keys with empty values in json output. empty values are stored as ''
+#   sheet:              string;  1:     numeric, 1-based index of target sheet
+#   isColOriented:      boolean: false; are objects stored in excel columns; key names in col A
+#   omitEmptyFields:    boolean: false: do not include keys with empty values in json output. empty values are stored as ''
+#                                       TODO: this is probably better named omitKeysWithEmptyValues
+#   convertTextToNumber boolean: true;  if text looks like a number, convert it to a number
 #
 # convertExcel(src, dst) <br/>
 #   will write a row oriented xlsx sheet 1 to `dst` as JSON with no notification
@@ -151,6 +156,7 @@ _DEFAULT_OPTIONS =
   sheet: '1'
   isColOriented: false
   omitEmptyFields: false
+  convertTextToNumber: true
 
 # Ensure options sane, provide defaults as appropriate
 _validateOptions = (options) ->
@@ -174,6 +180,8 @@ _validateOptions = (options) ->
       options.isColOriented = false
     if !options.hasOwnProperty('omitEmptyFields')
       options.omitEmptyFields = false
+    if !options.hasOwnProperty('convertTextToNumber')
+      options.convertTextToNumber = true
   options
 
 

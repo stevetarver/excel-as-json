@@ -9,6 +9,7 @@ expect = chai.expect;
 EMPTY_CELL = ''
 DEFAULT_OPTIONS =
   omitEmptyFields: false
+  convertTextToNumber: true
 
 
 describe 'assign', ->
@@ -97,6 +98,7 @@ describe 'assign', ->
 
   it 'should not split a semicolon list with a terminal indexed array', ->
     subject = {}
+    console.log('Note: warnings on this test expected')
     assign subject, 'foo.bar[0]', 'peter;paul;mary', DEFAULT_OPTIONS
     subject.foo.bar.should.equal 'peter;paul;mary'
 
@@ -104,6 +106,7 @@ describe 'assign', ->
   it 'should omit empty scalar fields when directed', ->
     o =
       omitEmptyFields: true
+      convertTextToNumber: true
     subject = {}
     assign subject, 'foo', EMPTY_CELL, o
     subject.should.not.have.property 'foo'
@@ -112,6 +115,7 @@ describe 'assign', ->
   it 'should omit empty nested scalar fields when directed', ->
     o =
       omitEmptyFields: true
+      convertTextToNumber: true
     subject = {}
     assign subject, 'foo.bar', EMPTY_CELL, o
     subject.should.have.property 'foo'
@@ -121,9 +125,11 @@ describe 'assign', ->
   it 'should omit nested array fields when directed', ->
     o =
       omitEmptyFields: true
+      convertTextToNumber: true
 
     # specified as an entire list
     subject = {}
+    console.log('Note: warnings on this test expected')
     assign subject, 'foo[]', EMPTY_CELL, o
     subject.should.not.have.property 'foo'
 
@@ -137,3 +143,12 @@ describe 'assign', ->
     assign subject, 'foo[0].bar', 'bazz', o
     assign subject, 'foo[1].bar', EMPTY_CELL, o
     subject.foo[1].should.not.have.property 'bar'
+
+
+  it 'should treat text that looks like numbers as text when directed', ->
+    o =
+      convertTextToNumber: false
+
+    subject = {}
+    assign subject, 'part', '00938', o
+    subject.part.should.be.a('string').and.equal('00938')

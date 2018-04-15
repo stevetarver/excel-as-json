@@ -37,6 +37,7 @@ convertExcel(src, dst, options, callback);
     * sheet: 1 based sheet index as text - default '1' 
     * isColOriented: are object values in columns with keys in column A - default false
     * omitEmptyFields: omit empty Excel fields from JSON output - default false
+    * convertTextToNumber: if text looks like a number, convert it to a number - default true
 * callback(err, data): callback for completion notification
 
 **NOTE** If options are not specified, defaults are used.
@@ -309,6 +310,43 @@ from 'excel' as 0 and 1 - just too confusing.
 During install (mac), you may see compiler warnings while installing the
 excel dependency - although questionable, they appear to be benign.
 
+## Running tests
+
+You can run tests after GitHub clone and `npm install` with:
+
+```bash
+ᐅ npm run-script test
+
+> excel-as-json@2.0.1 test /Users/starver/code/makara/excel-as-json
+> tools/test.sh
+
+  assign
+    ✓ should assign first level properties
+    ✓ should assign second level properties
+    ✓ should assign third level properties
+#...
+```
+
+## Bug Reports
+
+To investigate bugs, we need to recreate the failure. In each bug report, please include:
+
+* Title: A succinct description of the failure
+* Body:
+    * What is expected
+    * What happened
+    * What you did
+    * Environment:
+        * excel-as-json version
+        * node version:
+        * npm version:
+    * Attach a small worksheet and code snippet that reproduces the error
+
+## Contributing
+
+This project is small and simple and intends to remain that way. If you want to add functionality, please raise an issue as a place we can discuss it prior to doing any work.
+
+You are always free to fork this repo and create your own version to do with as you will, or include this functionality in your projects and modify it to your heart's content.
 
 ## TODO
 
@@ -318,6 +356,12 @@ excel dependency - although questionable, they appear to be benign.
 
 
 ## Change History
+
+### 2.0.2
+
+- Fix #23 Embedded arrays contain empty string. Flaw in code inserted empty string when no text values were provided for a key like `aliases[]`.
+- Fix #30 not able to force numbers as strings. Added option `convertTextToNumber` defaulting to `true`. If set to false, cells containing text that looks like a number are not converted to a numeric type.
+
 
 ### 2.0.1
 - Fix creating missing destination directories to complete prior to writing file
