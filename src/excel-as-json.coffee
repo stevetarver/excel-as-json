@@ -87,8 +87,10 @@ assign = (obj, key, value, options) ->
       console.error "WARNING: Indexed arrays indicate a list of objects and should not be the last element in a key path"
       console.error "WARNING: The last element of a key path should be a key name or flat array. E.g. alias, aliases[]"
     if (keyIsList and not index?)
-      if !(options.omitEmptyFields && value == '')
+      if value != ''
         obj[keyName] = convertValueList(value.split ';')
+      else if !options.omitEmptyFields
+        obj[keyName] = []
     else
       if !(options.omitEmptyFields && value == '')
         obj[keyName] = convertValue value
