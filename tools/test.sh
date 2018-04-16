@@ -4,7 +4,7 @@
 rm -rf build
 
 # Use our custom coffee-coverage loader to generate instrumented coffee files
-mocha -R spec --compilers coffee:coffee-script/register \
+mocha -R spec --compilers coffee:coffeescript/register \
               --require ./tools/coffee-coverage-loader.js \
               spec/all-specs.coffee
 
