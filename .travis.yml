@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - '0.12'
 before_install:
-  - 'npm install -g coffee-script'
+  - 'npm install -g coffeescript'
 before_script:
   - 'npm run-script dist'
 after_success:
