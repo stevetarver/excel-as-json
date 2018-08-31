@@ -337,9 +337,10 @@ To investigate bugs, we need to recreate the failure. In each bug report, please
     * What happened
     * What you did
     * Environment:
+        * operating system and version
+        * node version
+        * npm version
         * excel-as-json version
-        * node version:
-        * npm version:
     * Attach a small worksheet and code snippet that reproduces the error
 
 ## Contributing
